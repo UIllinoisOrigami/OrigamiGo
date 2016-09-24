@@ -1,0 +1,166 @@
+/**
+ * @author mwakaba2
+ */
+
+
+body {
+	width: 100%;
+	font-family: 'Open Sans', sans-serif;
+	font-size: 16px;
+	font-weight: 400;
+	margin: 0;
+}
+
+/*
+*	Canvas Style
+*/
+
+canvas {
+	position: fixed;
+	top: 0;
+	right: 0;
+}
+
+/*
+* Button Styling
+*/
+
+button {
+	border: 2px solid #20B2AA;
+	width: 100px;
+	color: #20B2AA;
+	border-radius : 4px;
+	background-color: #fafafa;
+	padding: 10px 20px;
+	margin: 10px;
+}
+
+
+.red {
+	border-color: red;
+	color: red;
+}
+
+.disabled {
+	border-color: gray;
+	color: gray;
+	background-color: #fbfbfb;
+}
+
+#create {
+	width: 200px;
+}
+
+/*
+* HEADER Styling
+*/
+h1, h2 {
+	margin: 5px;
+}
+
+h1 {
+	margin-top: 10px;
+}
+
+.clear {
+	clear: both;
+}
+
+/* paragraph styling */
+#instruction {
+	width: 500px;
+	margin-right: 100px;
+}
+
+/* Layout */
+.title {
+	font-family: 'Quicksand', sans-serif;
+	position: absolute;
+	width: 70%;
+	height: auto;
+	font-size: 60px;
+	z-index: 1;
+	top: 20px;
+	left: 20px;
+}
+
+.container {
+	background-color: #fafafa;
+	width: 100%;
+	margin: 0 auto;
+	position: fixed;
+	padding: 10px 20px 20px 20px;
+	bottom: 0;
+	z-index: 1;
+}
+
+
+.file {
+	width: 200px;
+	display: none;
+}
+
+/*
+*	Tool Box Style
+*/
+
+.tools-container {
+	position: absolute;
+	width: 14%;
+	min-width: 143px;
+	height: auto;
+	background: #fafafa;
+	padding-top: 5px;
+	z-index: 1;
+	top: 20px;
+	right: 20px;
+	border-radius: 5px;
+	padding: 10px;
+	text-align: center;
+}
+
+/****** Create Container ********/
+/*
+*	Drag and Drop Style
+*/
+
+.create-container {
+	float: right;
+	width: 60%;
+}
+
+#dd-files {
+	width: 100%;
+	height: auto;
+	border: 5px dashed #D9D9D9;
+	border-radius: 10px;
+	padding: 40px 20px;
+	text-align: center;
+}
+
+.over {
+	background: #F7F7F7;
+}
+
+#cancel {
+	display: none;
+}
+
+/****** Instructions Container ********/
+
+.instructions-container {
+	width: 30%;
+	margin-right: 100px;
+	float: left;
+	position: relative;
+  overflow-x: hidden;
+}
+
+.carousel {
+    width: 250px;
+    height: 250px;
+    position: relative;
+    overflow-x: hidden;
+    border: 2px solid #20B2AA;
+    border-radius: 4px;
+}

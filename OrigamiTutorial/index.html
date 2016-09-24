@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Origami Tutorial App</title>
+		<link rel="stylesheet" href="css/reset.css">
+		<link rel="stylesheet" href="css/main.css">
+	</head>
+	<body>
+		<!--  Google Fonts-->
+		<link href='http://fonts.googleapis.com/css?family=Quicksand|Open+Sans:400,600,300' rel='stylesheet' type='text/css'>
+
+		<!-- jQuery --> 
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+		<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
+		<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+
+		<!-- Graphics -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r71/three.min.js"></script>
+		<script src="js/libs/OrbitControls.js"></script>
+		<script src="js/libs/Detector.js"></script>
+		<script src="js/libs/Stats.js"></script>
+		<script src="js/libs/underscore.js"></script>
+		<script src="js/libs/Projector.js"></script>
+		<script src="js/libs/THREEx.FullScreen.js"></script>
+		<script src="js/libs/THREEx.WindowResize.js"></script>
+		<script src="js/libs/drag_file.js"></script>
+		<script src="js/main.js"></script>
+		<script src="js/origami.js"></script>
+		<script src="js/animation.js"></script>
+		<script src="js/parser.js"></script>
+		
+		<h1 class="title">Origami Tutorial</h1>
+		<div class="tools-container">
+			<button id="next">Start</button>
+			<h4>Available Tutorials</h4>
+			<button id="dog">Dog</button>
+			<button id="cup">Cup</button>
+			<button id="fox">Fox</button>
+			<button id="balloon">Balloon</button>
+		</div>
+
+		<div class="container">
+			<div class="create-container">
+				<button id="create">Animate your own origami</button>
+				<div class="file">
+					<div id="dd-files">Drop a .txt file here</div>
+					<pre id="file-content"></pre>
+				</div>
+				<div class="clear"></div>
+				<button class="red" id="cancel">Cancel</button>
+			</div>
+			<div class="instructions-container">
+				<p id="instruction"></p>
+				<div class="carousel"></div>
+			</div>
+			<div class="clear"></div>
+		</div>
+	</body>
+</html>
