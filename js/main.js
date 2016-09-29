@@ -1,5 +1,5 @@
 
-var scene, camera, renderer, downPoint;
+var scene, camera, renderer, downPoint, allFoldLines;
 var pointQuad = true;
 var bounds = {
 			x:0,
@@ -13,7 +13,8 @@ init();
 animate();
 
 function init() {
-
+  //allFoldLines
+  allFoldLines = [];
   //SCENE
   scene = new THREE.Scene();
   var WIDTH = window.innerWidth,
@@ -44,11 +45,28 @@ function init() {
   scene.add(light);
 
   //LOAD PLANE/SQUARE    
-  var geometry = new THREE.PlaneGeometry(15, 20);
+  var geometry = new THREE.Geometry();
+  geometry.vertices.push(new THREE.Vector3(-10,-10,0));
+  geometry.vertices.push(new THREE.Vector3(10,-10,0));
+  geometry.vertices.push(new THREE.Vector3(10,10,0));
+  geometry.faces.push( new THREE.Face3( 0, 1, 2 ) );
+  //geometry.computeFaceNormals();
   var material = new THREE.MeshBasicMaterial({color: 0x79bcff, side: THREE.DoubleSide});
-  var plane = new THREE.Mesh(geometry, material);
-  scene.add(plane);
-
+  var plane1 = new THREE.Mesh(geometry, material);
+  plane1.name="mesh";
+    
+  var geometry2 = new THREE.Geometry();
+  geometry2.vertices.push(new THREE.Vector3(-10,-10,0));
+  geometry2.vertices.push(new THREE.Vector3(-10,10,0));
+  geometry2.vertices.push(new THREE.Vector3(10,10,0));
+  geometry2.faces.push( new THREE.Face3( 0, 1, 2 ) );
+  var material2 = new THREE.MeshBasicMaterial({color: 0x79bcff, side: THREE.DoubleSide}); 
+  var plane2 = new THREE.Mesh(geometry2, material2);
+  plane2.name="mesh";
+    
+  scene.add(plane2);
+  scene.add(plane1);
+    
   //ORBITCONTROLS
   controls = new THREE.OrbitControls(camera, renderer.domElement);
   window.addEventListener( 'mousedown', onMouseDown, false );
@@ -58,9 +76,53 @@ function init() {
 }
 
 function animate(){
+  checkDrawStyle();
   requestAnimationFrame(animate);
   renderer.render(scene, camera);
   controls.update();
+}
+
+function performFold(){
+    if(scene.getObjectByName("foldLine"))
+    {
+      var foldingLine = scene.getObjectByName("foldLine");
+      scene.remove(foldingLine);
+      foldingLine.name = "visualFoldLine";
+      foldingLine.material.color = 0xf0bcff;
+      allFoldLines.push(foldingLine);
+      //performfold on all mesh, allFoldLines, and BoarderLines(if we make boarderlines).
+    }
+}
+
+function checkDrawStyle(){
+  if (document.getElementById('normal').checked) {
+    scene.traverse( function(child){
+      if( child instanceof THREE.Mesh && child.name=="mesh")
+        child.material.wireframe= false;
+      else if(child instanceof THREE.Line && child.name=="visualFoldLine")
+        scene.remove(child);
+    });
+  }
+  else if (document.getElementById('wireframe').checked) {
+    scene.traverse( function(child){
+      if(child instanceof THREE.Mesh && child.name=="mesh")
+        child.material.wireframe= true;
+      else if(child instanceof THREE.Line && child.name=="visualFoldLine")
+        scene.remove(child);
+    });
+  }
+  else if (document.getElementById('foldLines').checked) {
+     scene.traverse( function(child){
+      if( child instanceof THREE.Mesh && child.name=="mesh")
+        child.material.wireframe= false;
+    }); 
+
+    allFoldLines.forEach(function(entry){
+      scene.add(entry);
+    });
+    
+      
+  }
 }
 
 function onMouseUp(event)
@@ -115,8 +177,10 @@ function onKeyUp(event)
 {
     if(event.keyCode =="32")
         controls.enabled = true;
+     if(event.keyCode =="16")
+        performFold();   
         
-}
+} 
 
 function get3dPointZAxis(event)
 {
