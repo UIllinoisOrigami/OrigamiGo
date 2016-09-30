@@ -13,8 +13,6 @@ init();
 animate();
 
 function init() {
-  //allFoldLines
-  allFoldLines = [];
   //SCENE
   scene = new THREE.Scene();
   var WIDTH = window.innerWidth,
@@ -64,8 +62,42 @@ function init() {
   var plane2 = new THREE.Mesh(geometry2, material2);
   plane2.name="mesh";
     
-  scene.add(plane2);
   scene.add(plane1);
+  scene.add(plane2);
+    
+  //LOAD BOARDER
+  var geometry = new THREE.Geometry();
+  geometry.vertices.push(new THREE.Vector3(10,-10,0));
+  geometry.vertices.push(new THREE.Vector3(-10,-10,0));
+  var material = new THREE.LineBasicMaterial({color: 0x79bc0f});
+  var line1 = new THREE.Line(geometry, material);
+  line1.name="boarderLine";
+
+  var geometry = new THREE.Geometry();
+  geometry.vertices.push(new THREE.Vector3(-10,-10,0));
+  geometry.vertices.push(new THREE.Vector3(-10,10,0));
+  var material = new THREE.LineBasicMaterial({color: 0x79bc0f});
+  var line2 = new THREE.Line(geometry, material);
+  line2.name="boarderLine";
+    
+  var geometry = new THREE.Geometry();
+  geometry.vertices.push(new THREE.Vector3(-10,10,0));
+  geometry.vertices.push(new THREE.Vector3(10,10,0));
+  var material = new THREE.LineBasicMaterial({color: 0x79bc0f});
+  var line3 = new THREE.Line(geometry, material);
+  line3.name="boarderLine";
+    
+  var geometry = new THREE.Geometry();
+  geometry.vertices.push(new THREE.Vector3(10,10,0));
+  geometry.vertices.push(new THREE.Vector3(10,-10,0));
+  var material = new THREE.LineBasicMaterial({color: 0x79bc0f});
+  var line4 = new THREE.Line(geometry, material);
+  line4.name="boarderLine";
+    
+  scene.add(line1);
+  scene.add(line2);
+  scene.add(line3);
+  scene.add(line4);
     
   //ORBITCONTROLS
   controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -86,11 +118,15 @@ function performFold(){
     if(scene.getObjectByName("foldLine"))
     {
       var foldingLine = scene.getObjectByName("foldLine");
-      scene.remove(foldingLine);
       foldingLine.name = "visualFoldLine";
       foldingLine.material.color = 0xf0bcff;
-      allFoldLines.push(foldingLine);
-      //performfold on all mesh, allFoldLines, and BoarderLines(if we make boarderlines).
+      foldingLine.visible=false; 
+        
+      //performfold on all mesh, visualFoldLines, and boarderLines.
+      //boarderLines and mesh need to be rotated 180deg around the foldingLine.
+      //visualFoldLines need to have the end point moved to the interesection of the foldingLine and the visualFoldLine if they cross. might be tricky to find witch point is the end point. it is the point clossest to the foldingLine.
+      
+      //to do this we need collision detection.
     }
 }
 
@@ -100,7 +136,7 @@ function checkDrawStyle(){
       if( child instanceof THREE.Mesh && child.name=="mesh")
         child.material.wireframe= false;
       else if(child instanceof THREE.Line && child.name=="visualFoldLine")
-        scene.remove(child);
+          child.visible=false;
     });
   }
   else if (document.getElementById('wireframe').checked) {
@@ -108,18 +144,16 @@ function checkDrawStyle(){
       if(child instanceof THREE.Mesh && child.name=="mesh")
         child.material.wireframe= true;
       else if(child instanceof THREE.Line && child.name=="visualFoldLine")
-        scene.remove(child);
+          child.visible=false;
     });
   }
   else if (document.getElementById('foldLines').checked) {
      scene.traverse( function(child){
       if( child instanceof THREE.Mesh && child.name=="mesh")
         child.material.wireframe= false;
+      else if(child instanceof THREE.Line && child.name=="visualFoldLine")
+        child.visible=true;
     }); 
-
-    allFoldLines.forEach(function(entry){
-      scene.add(entry);
-    });
     
       
   }
