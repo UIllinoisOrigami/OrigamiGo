@@ -42,29 +42,48 @@ function init() {
   light.position.set(-100, 200, 100);
   scene.add(light);
 
-  //LOAD PLANE/SQUARE    
-  var geometry = new THREE.Geometry();
+  //LOAD PAPER   <--- Figure out how to make front and back diff. colors. Will make for better visibility in folding.
+	var geometry = new THREE.Geometry();
+	geometry.vertices.push(
+		new THREE.Vector3(-10,-10,0),
+		new THREE.Vector3(10,-10,0),
+		new THREE.Vector3(10,10,0),
+		new THREE.Vector3(-10,10,0)
+	);
+	geometry.faces.push(
+		new THREE.Face3( 0, 1, 2 ),
+		new THREE.Face3( 0, 2, 3 )
+	);
+
+	var material = new THREE.MeshBasicMaterial({color: 0x79bcff, side: THREE.DoubleSide});
+	var paper = new THREE.Mesh(geometry, material);
+	paper.name = "mesh";
+
+	scene.add(paper);
+
+  /*var geometry = new THREE.Geometry();
   geometry.vertices.push(new THREE.Vector3(-10,-10,0));
   geometry.vertices.push(new THREE.Vector3(10,-10,0));
   geometry.vertices.push(new THREE.Vector3(10,10,0));
   geometry.faces.push( new THREE.Face3( 0, 1, 2 ) );
+
   //geometry.computeFaceNormals();
   var material = new THREE.MeshBasicMaterial({color: 0x79bcff, side: THREE.DoubleSide});
   var plane1 = new THREE.Mesh(geometry, material);
   plane1.name="mesh";
-    
+
   var geometry2 = new THREE.Geometry();
   geometry2.vertices.push(new THREE.Vector3(-10,-10,0));
   geometry2.vertices.push(new THREE.Vector3(-10,10,0));
   geometry2.vertices.push(new THREE.Vector3(10,10,0));
   geometry2.faces.push( new THREE.Face3( 0, 1, 2 ) );
-  var material2 = new THREE.MeshBasicMaterial({color: 0x79bcff, side: THREE.DoubleSide}); 
+  var material2 = new THREE.MeshBasicMaterial({color: 0x79bcff, side: THREE.DoubleSide});
   var plane2 = new THREE.Mesh(geometry2, material2);
   plane2.name="mesh";
-    
+
   scene.add(plane1);
-  scene.add(plane2);
-    
+  scene.add(plane2); */
+
   //LOAD BOARDER
   var geometry = new THREE.Geometry();
   geometry.vertices.push(new THREE.Vector3(10,-10,0));
@@ -79,26 +98,26 @@ function init() {
   var material = new THREE.LineBasicMaterial({color: 0x79bc0f});
   var line2 = new THREE.Line(geometry, material);
   line2.name="boarderLine";
-    
+
   var geometry = new THREE.Geometry();
   geometry.vertices.push(new THREE.Vector3(-10,10,0));
   geometry.vertices.push(new THREE.Vector3(10,10,0));
   var material = new THREE.LineBasicMaterial({color: 0x79bc0f});
   var line3 = new THREE.Line(geometry, material);
   line3.name="boarderLine";
-    
+
   var geometry = new THREE.Geometry();
   geometry.vertices.push(new THREE.Vector3(10,10,0));
   geometry.vertices.push(new THREE.Vector3(10,-10,0));
   var material = new THREE.LineBasicMaterial({color: 0x79bc0f});
   var line4 = new THREE.Line(geometry, material);
   line4.name="boarderLine";
-    
+
   scene.add(line1);
   scene.add(line2);
   scene.add(line3);
   scene.add(line4);
-    
+
   //ORBITCONTROLS
   controls = new THREE.OrbitControls(camera, renderer.domElement);
   window.addEventListener( 'mousedown', onMouseDown, false );
@@ -130,8 +149,6 @@ function onKeyUp(event)
     if(event.keyCode =="32")
         controls.enabled = true;
      if(event.keyCode =="16")
-        performFold();   
-        
-} 
+        performFold();
 
-
+}
