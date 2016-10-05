@@ -55,7 +55,7 @@ function init() {
 		new THREE.Face3( 0, 2, 3 )
 	);
 
-	var material = new THREE.MeshBasicMaterial({color: 0xcd5c5c, side: THREE.DoubleSide});
+	var material = new THREE.MeshBasicMaterial({color: 0x6495ed, side: THREE.DoubleSide});
 	var paper = new THREE.Mesh(paperGeometry, material);
 	paper.name = "mesh";
 
@@ -94,7 +94,7 @@ function init() {
 		new THREE.Vector3(10,10,0),
 		new THREE.Vector3(10,-10,0)
 	);
-  var material = new THREE.LineBasicMaterial({color: 0x79bc0f});
+  var material = new THREE.LineBasicMaterial({color: 0xcd5c5c});
 	var borders = new THREE.Line(borderGeometry, material);
 	borders.name = "borders"
 	scene.add(borders);
