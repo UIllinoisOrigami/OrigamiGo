@@ -42,21 +42,21 @@ function init() {
   light.position.set(-100, 200, 100);
   scene.add(light);
 
-  //LOAD PAPER   <--- Figure out how to make front and back diff. colors. Will make for better visibility in folding.
-	var geometry = new THREE.Geometry();
-	geometry.vertices.push(
+  //LOAD PAPER   <--- Figure out how to make front and back diff. colors. Will make for better visibility in folding animation.
+	var paperGeometry = new THREE.Geometry();
+	paperGeometry.vertices.push(
 		new THREE.Vector3(-10,-10,0),
 		new THREE.Vector3(10,-10,0),
 		new THREE.Vector3(10,10,0),
 		new THREE.Vector3(-10,10,0)
 	);
-	geometry.faces.push(
+	paperGeometry.faces.push(
 		new THREE.Face3( 0, 1, 2 ),
 		new THREE.Face3( 0, 2, 3 )
 	);
 
-	var material = new THREE.MeshBasicMaterial({color: 0x79bcff, side: THREE.DoubleSide});
-	var paper = new THREE.Mesh(geometry, material);
+	var material = new THREE.MeshBasicMaterial({color: 0xcd5c5c, side: THREE.DoubleSide});
+	var paper = new THREE.Mesh(paperGeometry, material);
 	paper.name = "mesh";
 
 	scene.add(paper);
@@ -84,8 +84,22 @@ function init() {
   scene.add(plane1);
   scene.add(plane2); */
 
-  //LOAD BOARDER
-  var geometry = new THREE.Geometry();
+  //LOAD BORDER    <-----Investigate using buffer geometry?
+	//Need better way to add and remove lines. This borderGeometry will probably go poof.
+	var borderGeometry = new THREE.Geometry();
+	borderGeometry.vertices.push(
+		new THREE.Vector3(10,-10,0),
+		new THREE.Vector3(-10,-10,0),
+		new THREE.Vector3(-10,10,0),
+		new THREE.Vector3(10,10,0),
+		new THREE.Vector3(10,-10,0)
+	);
+  var material = new THREE.LineBasicMaterial({color: 0x79bc0f});
+	var borders = new THREE.Line(borderGeometry, material);
+	borders.name = "borders"
+	scene.add(borders);
+
+  /*var geometry = new THREE.Geometry();
   geometry.vertices.push(new THREE.Vector3(10,-10,0));
   geometry.vertices.push(new THREE.Vector3(-10,-10,0));
   var material = new THREE.LineBasicMaterial({color: 0x79bc0f});
@@ -116,7 +130,7 @@ function init() {
   scene.add(line1);
   scene.add(line2);
   scene.add(line3);
-  scene.add(line4);
+  scene.add(line4);*/
 
   //ORBITCONTROLS
   controls = new THREE.OrbitControls(camera, renderer.domElement);
