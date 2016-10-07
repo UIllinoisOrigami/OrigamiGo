@@ -88,16 +88,21 @@ function init() {
 	//Need better way to add and remove lines. This borderGeometry will probably go poof.
 	var borderGeometry = new THREE.Geometry();
 	borderGeometry.vertices.push(
-		new THREE.Vector3(10,-10,0),
-		new THREE.Vector3(-10,-10,0),
-		new THREE.Vector3(-10,10,0),
-		new THREE.Vector3(10,10,0),
-		new THREE.Vector3(10,-10,0)
+		new THREE.Vector3(10.25,-10.25,0),
+		new THREE.Vector3(-10.25,-10.25,0),
+		new THREE.Vector3(-10.25,10.25,0),
+		new THREE.Vector3(10.25,10.25,0),
+		new THREE.Vector3(10.25,-10.25,0)
 	);
-  var material = new THREE.LineBasicMaterial({color: 0xcd5c5c});
-	var borders = new THREE.Line(borderGeometry, material);
-	borders.name = "borders"
+    var meshLine = new THREE.MeshLine();
+    meshLine.setGeometry( borderGeometry );
+    var material = new THREE.MeshLineMaterial({color: new THREE.Color(0xc05c5c )});
+    var borders = new THREE.Mesh(meshLine.geometry, material);
+    //var material = new THREE.LineBasicMaterial({color: 0xcd5c5c});
+	//var borders = new THREE.Line(borderGeometry, material);
+	borders.name = "borders";
 	scene.add(borders);
+    
 
   /*var geometry = new THREE.Geometry();
   geometry.vertices.push(new THREE.Vector3(10,-10,0));
