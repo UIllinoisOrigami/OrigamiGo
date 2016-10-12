@@ -78,18 +78,17 @@ function triRemesh(triVerts, lineVerts){ //triVerts=[[a,b,c],[e,f,g],[h,i,j]] li
   if(point_arr.length == 4){
     var vertex = lineVerts[0];
     var other = lineVerts[1];
+    if(removeRepeats(triVerts.concat([lineVerts[1]])).length == 3){
+      vertex = lineVerts[1];
+      other = lineVerts[0];
+    }
     var no_l_verts = [];
     //Determine which of the line points is also a triangle vertex point, and which triangle points aren't
     for(var i = 0; i < 3; i++){
-      if(removeRepeats([triVerts[i],lineVerts[1]]).length == 1){
-        vertex = lineVerts[1];
-        other = lineVerts[2];
-      }
-      else{
+      if(removeRepeats([triVerts[i],vertex]).length == 2){
         no_l_verts.push(triVerts[i]);
       }
     }
-
     //1.0: Vertex to side
     for(var i = 0; i < 3 ; i++){
       if(pointOnLine(other,trisides[i]) == true){ //Line goes through both a vertex and a side
@@ -98,6 +97,7 @@ function triRemesh(triVerts, lineVerts){ //triVerts=[[a,b,c],[e,f,g],[h,i,j]] li
         return [ret_tri1, ret_tri2];
       }
     }
+
     //1.1: Vertex to inside of triangle - how to handle?
   }
   //Case 2: 5 unique vertices
