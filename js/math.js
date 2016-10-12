@@ -78,18 +78,16 @@ function triRemesh(triVerts, lineVerts){ //triVerts=[[a,b,c],[e,f,g],[h,i,j]] li
   if(point_arr.length == 4){
     var vertex = lineVerts[0];
     var other = lineVerts[1];
-    //Determine which of the line points is also a triangle vertex point
+    var no_l_verts = [];
+    //Determine which of the line points is also a triangle vertex point, and which triangle points aren't
     for(var i = 0; i < 3; i++){
       if(removeRepeats([triVerts[i],lineVerts[1]]).length == 1){
         vertex = lineVerts[1];
         other = lineVerts[2];
-        break;
       }
-    }
-
-    var no_l_verts = [];
-    for(var i = 0; i < 3; i++){
-      if(removeRepeats([triVerts[i], vertex]).length == 2){no_l_verts.push(triVerts[i]);}
+      else{
+        no_l_verts.push(triVerts[i]);
+      }
     }
 
     //1.0: Vertex to side
@@ -100,12 +98,27 @@ function triRemesh(triVerts, lineVerts){ //triVerts=[[a,b,c],[e,f,g],[h,i,j]] li
         return [ret_tri1, ret_tri2];
       }
     }
-    //1.1: Vertex to inside of triangle  - how to handle?
+    //1.1: Vertex to inside of triangle - how to handle?
   }
   //Case 2: 5 unique vertices
+  else{
+    var points_on_line = []; //Helps us figure out if one or both of our line points lie on the triangle sides.
+    for(var i = 0; i < 2; i++){
+      for(var k = 0; k < 3; k++){
+        if(pointOnLine(lineVerts[i], trisides[k]) == true){
+          points_on_line.push(lineVerts[i]);
+          break;
+        }
+      }
+    }
     //2.0: Side to side
+    if(points_on_line.length == 2){
+
+    }
     //2.1: Side to inside triangle
 
+
+  }
 }
 
 /** Remove Repeats
