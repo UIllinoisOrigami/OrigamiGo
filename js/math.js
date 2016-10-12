@@ -42,7 +42,7 @@ function lineTriInt(triVerts, lineVerts){  //triVerts=[[a,b,c],[e,f,g],[h,i,j]] 
     var s = x[0],
         t = x[1];
 
-    if( (d3 - c3)*s - (b3 - a3)*t === a3-c3){  
+    if( (d3 - c3)*s - (b3 - a3)*t === a3-c3){
       var p_x = a1 + (b1-a1)*t,
           p_y = a2 + (b2-a2)*t,
           p_z = a3 + (b3-a3)*t;
@@ -66,3 +66,15 @@ function triRemesh(triVerts, lineVerts){
 
   //line from vertex to side
   //consider if line does not fully intersect triangle.
+}
+/** Remove Repeats
+* Quick and dirty way to remove any duplicate points in a point array.
+* Takes point array, returns cleaned array.
+*/
+function removeRepeats(points) {
+  dictionaries_are_beautiful_things={}; //especially when you don't know jquery
+  for (var i=0;i<points.length;i++) {
+    dictionaries_are_beautiful_things[points[i]]=0;
+  }
+  return Object.keys(dictionaries_are_beautiful_things);
+}
