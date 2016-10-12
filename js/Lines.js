@@ -37,15 +37,15 @@ function onMouseUp(event)
 
 function get3dPointZAxis(event)
 {
-    projector = new THREE.Projector();
     var vector = new THREE.Vector3(
         ( event.clientX / window.innerWidth ) * 2 - 1,
         - ( event.clientY / window.innerHeight ) * 2 + 1,
         1.0 );
-    projector.unprojectVector( vector, camera );
+    vector.unproject( camera );
     var dir = vector.sub( camera.position ).normalize();
     var distance = - camera.position.z / dir.z;
-    var pos = camera.position.clone().add( dir.multiplyScalar( distance ) );    
+    var pos = camera.position.clone().add( dir.multiplyScalar( distance ) );
+    
     return pos;
 }
 
