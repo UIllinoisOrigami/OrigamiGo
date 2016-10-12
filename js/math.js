@@ -61,9 +61,9 @@ function lineTriInt(triVerts, lineVerts){  //triVerts=[[a,b,c],[e,f,g],[h,i,j]] 
 * Return an array of size-3 arrays of newly calculated triangle vertices.
 */
 function triRemesh(triVerts, lineVerts){ //triVerts=[[a,b,c],[e,f,g],[h,i,j]] lineVerts = [[k,l,m],[n,o,p]]
-  /*var triside1 = [triVerts[0], triVerts[1]];
-  var triside2 = [triVerts[1], triVerts[2]];
-  var triside3 = [triVerts[2], triVerts[0]];*/
+  //var triside1 = [triVerts[0], triVerts[1]];
+  //var triside2 = [triVerts[1], triVerts[2]];
+  //var triside3 = [triVerts[2], triVerts[0]];
 
   var trisides = [triside1, triside2, triside3]; //[[[a,b,c],[e,f,g]],[[e,f,g],[h,i,j]],[[h,i,j],[a,b,c]]]
   var a1 = lineVerts[0][0],  //Line is AB
@@ -93,8 +93,8 @@ function triRemesh(triVerts, lineVerts){ //triVerts=[[a,b,c],[e,f,g],[h,i,j]] li
     //1.0: Vertex to side
     for(var i = 0; i < 3 ; i++){
       if(pointOnLine(other,trisides[i]) == true){ //Line goes through both a vertex and a side
-        var ret_tri1 = [[vertex],[other],[no_l_verts[0]]],
-            ret_tri2 = [[vertex],[other],[no_l_verts[1]]];
+        var ret_tri1 = [vertex, other, no_l_verts[0]],
+            ret_tri2 = [vertex, other, no_l_verts[1]];
         return [ret_tri1, ret_tri2];
       }
     }
@@ -103,24 +103,52 @@ function triRemesh(triVerts, lineVerts){ //triVerts=[[a,b,c],[e,f,g],[h,i,j]] li
   //Case 2: 5 unique vertices
   else{
     var points_on_line = []; //Helps us figure out if one or both of our line points lie on the triangle sides.
+    var triside_to_one = []; //Will help us figure out which "side" of the line contains 1 tri-vertex vs. two
     for(var i = 0; i < 2; i++){
       for(var k = 0; k < 3; k++){
         if(pointOnLine(lineVerts[i], trisides[k]) == true){
           points_on_line.push(lineVerts[i]);
+          triside_to_one.push(trisides[k]);
           break;
         }
       }
     }
     //2.0: Side to side
     if(points_on_line.length == 2){
-
+      //Find the vertex on the 1 vertex side of the line.
+      //triside_to_one = [[[a,b,c],[e,f,g]] , [[h,i,j], [a,b,c]] ]
+      triside_to_one = triside_to_one[0].concat(triside_to_one[1]);
+      triside_to_one = triside_to_one.sort();
+      var vertex_one;
+      var vertex_two = [];
+      if(removeRepeats([triside_to_one[0], triside_to_one[1]]) == 1){
+        vertex_one = triside_to_one[0];
+        vertex_two.push(triside_to_one[2]);
+        vertex_two.push(triside_to_one[3]);
+      }
+      else if(removeRepeats([triside_to_one[1], triside_to_one[2]]) == 1){
+        vertex_one = triside_to_one[2];
+        vertex_two.push(triside_to_one[0]);
+        vertex_two.push(triside_to_one[3]);
+      }
+      else if(removeRepeats([triside_to_one[2], triside_to_one[3]]) == 1){
+        vertex_one = triside_to_one[2];
+        vertex_two.push(triside_to_one[0]);
+        vertex_two.push(triside_to_one[1]);
+      }
+      var ret_tri1 = [vertex_one, points_on_line[0], points_on_line[1]],
+          ret_tri2 = [vertex_two[0], points_on_line[0], points_on_line[1]],
+          ret_tri3 = [vertex_two[0], vertex_two[1], points_on_line[0]];
+      //Need to dermine which of the line points is closest to vertex_two[1]
+      if(pointToPointDist(vertex_two[1], points_on_line[1]) < pointToPointDist(vertex_two[1], points_on_line[0]){
+        ret_tri3 = [vertex_two[0], vertex_two[1], points_on_line[1]];
+      }
+      return[ret_tri1, ret_tri2, ret_tri3];
     }
     //2.1: Side to inside triangle
 
-
   }
 }
-
 /** Remove Repeats
 * Quick and dirty way to remove any duplicate points in a point array.
 * Takes point array, returns cleaned array.
@@ -155,4 +183,16 @@ function pointOnLine(point, line){
   var mag_cross  = Math.abs(Math.sqrt(Math.pow(cross_product[0],2) + Math.pow(cross_product[1],2) + Math.pow(cross_product[2],2)));
   var dist = mag_cross/mag_l_dir_vec;
   return dist == 0;
+}
+/* Takes two points and calculates the distance
+* between them. Returns distance*/
+function pointToPointDist(point1, point2){
+  var x1 = point1[0],
+      y1 = point1[1],
+      z1 = point1[2];
+  var x2 = point2[0],
+      y2 = point2[1],
+      z2 = point2[2];
+  var dist = Math.abs(Math.sqrt(Math.pow((x2-x1),2) + Math.pow((y2-y1),2) + Math.pow((z2-z1),2)));
+  return dist;
 }
