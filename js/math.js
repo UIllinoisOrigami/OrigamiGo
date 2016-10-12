@@ -61,19 +61,13 @@ function lineTriInt(triVerts, lineVerts){  //triVerts=[[a,b,c],[e,f,g],[h,i,j]] 
 * Return an array of size-3 arrays of newly calculated triangle vertices.
 */
 function triRemesh(triVerts, lineVerts){ //triVerts=[[a,b,c],[e,f,g],[h,i,j]] lineVerts = [[k,l,m],[n,o,p]]
-  //var triside1 = [triVerts[0], triVerts[1]];
-  //var triside2 = [triVerts[1], triVerts[2]];
-  //var triside3 = [triVerts[2], triVerts[0]];
+  var triside1 = [triVerts[0], triVerts[1]];
+  var triside2 = [triVerts[1], triVerts[2]];
+  var triside3 = [triVerts[2], triVerts[0]];
 
   var trisides = [triside1, triside2, triside3]; //[[[a,b,c],[e,f,g]],[[e,f,g],[h,i,j]],[[h,i,j],[a,b,c]]]
-  var a1 = lineVerts[0][0],  //Line is AB
-      a2 = lineVerts[0][1],
-      a3 = lineVerts[0][2];
-  var b1 = lineVerts[1][0],
-      b2 = lineVerts[1][1],
-      b3 = lineVerts[1][2];
+  var point_arr = removeRepeats(lineVerts.concat(triVerts));
 
-  var point_arr = removeRepeats(lineVerts.concat(trisides[i]))
   //Case 1: 1 point of intersection (4 unique vertices)
   if(point_arr.length == 4){
     var vertex = lineVerts[0];
@@ -97,7 +91,6 @@ function triRemesh(triVerts, lineVerts){ //triVerts=[[a,b,c],[e,f,g],[h,i,j]] li
         return [ret_tri1, ret_tri2];
       }
     }
-
     //1.1: Vertex to inside of triangle - how to handle?
   }
   //Case 2: 5 unique vertices
