@@ -91,6 +91,7 @@ function triRemesh(triVerts, lineVerts){ //triVerts=[[a,b,c],[e,f,g],[h,i,j]] li
         return [ret_tri1, ret_tri2];
       }
     }
+
     //1.1: Vertex to inside of triangle - how to handle?
   }
   //Case 2: 5 unique vertices
@@ -114,26 +115,27 @@ function triRemesh(triVerts, lineVerts){ //triVerts=[[a,b,c],[e,f,g],[h,i,j]] li
       triside_to_one = triside_to_one.sort();
       var vertex_one;
       var vertex_two = [];
-      if(removeRepeats([triside_to_one[0], triside_to_one[1]]) == 1){
+      if(removeRepeats([triside_to_one[0], triside_to_one[1]]).length == 1){
         vertex_one = triside_to_one[0];
         vertex_two.push(triside_to_one[2]);
         vertex_two.push(triside_to_one[3]);
       }
-      else if(removeRepeats([triside_to_one[1], triside_to_one[2]]) == 1){
+      else if(removeRepeats([triside_to_one[1], triside_to_one[2]]).length == 1){
         vertex_one = triside_to_one[2];
         vertex_two.push(triside_to_one[0]);
         vertex_two.push(triside_to_one[3]);
       }
-      else if(removeRepeats([triside_to_one[2], triside_to_one[3]]) == 1){
+      else if(removeRepeats([triside_to_one[2], triside_to_one[3]]).length == 1){
         vertex_one = triside_to_one[2];
         vertex_two.push(triside_to_one[0]);
         vertex_two.push(triside_to_one[1]);
       }
+
       var ret_tri1 = [vertex_one, points_on_line[0], points_on_line[1]],
           ret_tri2 = [vertex_two[0], points_on_line[0], points_on_line[1]],
           ret_tri3 = [vertex_two[0], vertex_two[1], points_on_line[0]];
       //Need to dermine which of the line points is closest to vertex_two[1]
-      if(pointToPointDist(vertex_two[1], points_on_line[1]) < pointToPointDist(vertex_two[1], points_on_line[0]){
+      if(pointToPointDist(vertex_two[1], points_on_line[1]) < pointToPointDist(vertex_two[1], points_on_line[0])){
         ret_tri3 = [vertex_two[0], vertex_two[1], points_on_line[1]];
       }
       return[ret_tri1, ret_tri2, ret_tri3];
@@ -142,7 +144,8 @@ function triRemesh(triVerts, lineVerts){ //triVerts=[[a,b,c],[e,f,g],[h,i,j]] li
 
   }
 }
-/** Remove Repeats
+/**
+* Remove Repeats
 * Quick and dirty way to remove any duplicate points in a point array.
 * Takes point array, returns cleaned array.
 */
@@ -153,8 +156,10 @@ function removeRepeats(points) {
   }
   return Object.keys(dictionaries_are_beautiful_things);
 }
-/* Take point and array of line endpoints.
-* Returns true if point is on the line, else false. */
+/* *
+* Take point and array of line endpoints.
+* Returns true if point is on the line, else false.
+*/
 function pointOnLine(point, line){
   var l_a1 = line[0][0],
       l_a2 = line[0][1],
@@ -177,8 +182,10 @@ function pointOnLine(point, line){
   var dist = mag_cross/mag_l_dir_vec;
   return dist == 0;
 }
-/* Takes two points and calculates the distance
-* between them. Returns distance*/
+/**
+* Takes two points and calculates the distance
+* between them. Returns distance
+*/
 function pointToPointDist(point1, point2){
   var x1 = point1[0],
       y1 = point1[1],
@@ -188,4 +195,14 @@ function pointToPointDist(point1, point2){
       z2 = point2[2];
   var dist = Math.abs(Math.sqrt(Math.pow((x2-x1),2) + Math.pow((y2-y1),2) + Math.pow((z2-z1),2)));
   return dist;
+}
+/**
+* Find Spanning Line
+* Given a line (L1) with an end point (P1) not on triangle and betwen two coplanar lines (L2,L3)
+* Calculates and returns a spanning line that is also on the same plane, with end
+* points on both L2 and L3 and containing P1.
+* Takes point array and array of two line arrays, returns line array.
+*/
+function findSpanningLine(line, triSides){
+
 }
