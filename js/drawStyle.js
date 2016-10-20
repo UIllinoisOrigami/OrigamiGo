@@ -40,3 +40,25 @@ function checkDrawStyle(){
     });    
   }
 }
+
+//this function is to make a lot of geometry for testing. it will not be used in the real application. it is hear because this file has a lot of space.
+function terrainFromIteration(n, minX,maxX,minY,maxY, vertexArray, faceArray)
+{
+    var deltaX=(maxX-minX)/n;
+    var deltaY=(maxY-minY)/n;
+    for(var i=0;i<=n;i++)
+       for(var j=0;j<=n;j++)
+       {           
+           vertexArray.push(new THREE.Vector3(minX+deltaX*j,minY+deltaY*i,0.0));
+       }
+
+    var numT=0;
+    for(var i=0;i<n;i++)
+       for(var j=0;j<n;j++)
+       {
+           var vid = i*(n+1) + j;
+           faceArray.push(new THREE.Face3(vid,vid+1,vid+n+1));
+           faceArray.push(new THREE.Face3(vid+1,vid+1+n+1,vid+n+1));
+           numT+=2 ;
+       }
+}
