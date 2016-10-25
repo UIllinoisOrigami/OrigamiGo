@@ -1,12 +1,6 @@
 
 var scene, camera, renderer, downPoint, allFoldLines;
-var bounds = {
-			x:-10,
-			y:-10,
-			width:20,
-			height:20
-}
-var quad = new Quadtree(bounds,8,20);
+var uGrid = new uniformGrid(-11,-11,22,22);
 
 init();
 animate();
@@ -79,7 +73,7 @@ function init() {
             paperGeometry.vertices[paperGeometry.faces[i].b],
             paperGeometry.vertices[paperGeometry.faces[i].c]
         ]
-        //quad.insert(triangle);
+        uGrid.add(triangle, paperGeometry.faces[i]);
     }
 
   /*var geometry = new THREE.Geometry();
