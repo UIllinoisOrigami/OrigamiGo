@@ -6,11 +6,26 @@
 	<link rel="stylesheet" href="css/main.css">
 </head>
 <body>
-  <form action="">
-    <input type="radio" name="visualStyle" id="normal" value="normal" checked="checked"> normal<br>
-    <input type="radio" name="visualStyle" id="wireframe" value="wireframe"> wireframe<br>
-    <input type="radio" name="visualStyle" id="foldLines" value="foldLines"> foldLines
-  </form>
+    <table id="tableId" style = "width:50%">
+        <tr>
+            <td><input type="radio" name="visualStyle" id="normal" value="normal" checked="checked"> normal</td>
+            <td>Mouse Down Point:</td>
+            <td>Mouse Up Point:</td>
+        </tr>
+        <tr>
+            <td><input type="radio" name="visualStyle" id="borders" value="border" > border</td>
+            <td>x:<input type="text" name="downPointX" style="width: 30px;"></td>
+            <td>x:<input type="text" name="upPointX" style="width: 30px;"></td>
+        </tr>
+        <tr>
+            <td><input type="radio" name="visualStyle" id="wireframe" value="wireframe"> wireframe</td>
+            <td>y:<input type="text" name="downPointY" style="width: 30px;"></td>   
+            <td>y:<input type="text" name="upPointY" style="width: 30px;"></td>
+        </tr>
+        <tr>
+            <td><input type="radio" name="visualStyle" id="foldLines" value="foldLines"> foldLines</td>
+        </tr>
+    </table>
   <script src="js/libs/three.min.js"></script>
   <script src="js/libs/OrbitControls.js"></script>
   <script src="js/libs/THREE.MeshLine-master/src/THREE.MeshLine.js"></script>

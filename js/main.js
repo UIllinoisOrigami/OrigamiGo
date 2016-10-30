@@ -1,13 +1,6 @@
 
 var scene, camera, renderer, downPoint, allFoldLines;
-var pointQuad = true;
-var bounds = {
-			x:0,
-			y:0,
-			width:window.innerWidth,
-			height:window.innerHeight
-}
-var quad = new QuadTree(bounds, pointQuad);
+var uGrid = new uniformGrid(-11,-11,22,22);
 
 init();
 animate();
@@ -44,7 +37,7 @@ function init() {
 
   //LOAD PAPER   <--- Figure out how to make front and back diff. colors. Will make for better visibility in folding animation.
 	var paperGeometry = new THREE.Geometry();
-	paperGeometry.vertices.push(
+	/*paperGeometry.vertices.push(
 		new THREE.Vector3(-10,-10,0),
 		new THREE.Vector3(10,-10,0),
 		new THREE.Vector3(10,10,0),
@@ -59,7 +52,29 @@ function init() {
 	var paper = new THREE.Mesh(paperGeometry, material);
 	paper.name = "mesh";
 
+	scene.add(paper);*/
+    
+    //***************************************************************************
+    //add complex geometry for testing only function in drawstyle.js
+    var gridN=8;
+    
+    terrainFromIteration(gridN, -10,10,-10,10, paperGeometry.vertices,paperGeometry.faces);
+
+	var material = new THREE.MeshBasicMaterial({color: 0x6495ed, side: THREE.DoubleSide});
+	var paper = new THREE.Mesh(paperGeometry, material);
+	paper.name = "mesh";
+
 	scene.add(paper);
+    //*****************************************************************************
+    for( var i = 0; i< paperGeometry.faces.length; i++)
+    {
+        var triangle = [
+            paperGeometry.vertices[paperGeometry.faces[i].a],
+            paperGeometry.vertices[paperGeometry.faces[i].b],
+            paperGeometry.vertices[paperGeometry.faces[i].c]
+        ]
+        uGrid.add(triangle, paperGeometry.faces[i]);
+    }
 
   /*var geometry = new THREE.Geometry();
   geometry.vertices.push(new THREE.Vector3(-10,-10,0));
@@ -143,6 +158,8 @@ function init() {
   window.addEventListener( 'mouseup', onMouseUp, false );
   window.addEventListener( 'keydown', onKeyDown, false );
   window.addEventListener( 'keyup', onKeyUp, false );
+  window.addEventListener( 'input', onInputChange, false );
+
 }
 
 function animate(){

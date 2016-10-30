@@ -7,24 +7,64 @@ function onMouseUp(event)
 
       var geometry = new THREE.Geometry();
       var upPoint = get3dPointZAxis(event);
-      var xScale = upPoint.x-downPoint.x;
+      /*var xScale = upPoint.x-downPoint.x;
       var yScale = upPoint.y-downPoint.y;
 
-      while(upPoint.x<window.innerWidth && upPoint.x>-window.innerWidth &&
-            upPoint.y<window.innerHeight && upPoint.y>-window.innerHeight)
+      while(upPoint.x<10 && upPoint.x>-10 &&
+            upPoint.y<10 && upPoint.y>-10)
       {
         upPoint.x+=xScale;
         upPoint.y+=yScale;
       }
-      while(downPoint.x<window.innerWidth && downPoint.x>-window.innerWidth &&
-            downPoint.y<window.innerHeight && downPoint.y>-window.innerHeight)
+      while(downPoint.x<10 && downPoint.x>-10 &&
+            downPoint.y<10 && downPoint.y>-10)
       {
         downPoint.x-=xScale;
         downPoint.y-=yScale;
+      }*/
+      if(camera.position.z>0)
+      {
+        upPoint.z = 0.1;
+        downPoint.z = 0.1;
       }
-      upPoint.z=0.1;
-      downPoint.z=0.1;
+      else
+      {
+        upPoint.z = -0.1;
+        downPoint.z = -0.1;
+      }
+      
+      //the special line that is actually a triangle strip lets use set the width so we can see it... it also is not fun to work with. this is how we get the vertices out of the geometry.
+      var borders = scene.getObjectByName("borders")
+      var intersections = [];
+      for(var j=0; j<borders.geometry.attributes.position.array.length-6; j+=6)
+      {
+        var boarderLine = new THREE.Geometry();
+        boarderLine.vertices.push( new THREE.Vector3(borders.geometry.attributes.position.array[j],
+                      borders.geometry.attributes.position.array[j+1],
+                      borders.geometry.attributes.position.array[j+2]));
+        boarderLine.vertices.push( new THREE.Vector3(borders.geometry.attributes.position.array[j+6],
+                      borders.geometry.attributes.position.array[j+7],
+                      borders.geometry.attributes.position.array[j+8]));
+        intersections.push(line_intersect(upPoint,downPoint,boarderLine));
+      }
 
+      var maxX=-100, minX=100;
+      for(var i=0; i<intersections.length;i++)
+      {
+         if(intersections[i]!==null && maxX !== Math.max(maxX,intersections[i].x))
+         {
+               maxX=intersections[i].x;
+               upPoint.x = intersections[i].x;
+               upPoint.y = intersections[i].y;
+         }
+         if(intersections[i]!==null && minX !== Math.min(minX,intersections[i].x))
+         {
+             minX=intersections[i].x;
+             downPoint.x = intersections[i].x;
+             downPoint.y = intersections[i].y;
+         }
+      }
+   
       geometry.vertices.push(upPoint);
       geometry.vertices.push(downPoint);
       var material = new THREE.LineBasicMaterial({color: 0x79bc0f});
@@ -32,46 +72,89 @@ function onMouseUp(event)
       foldLine.name = "foldLine";
 
       scene.add(foldLine);
-  }
-}
+      
+      document.getElementsByName("downPointX")[0].value =downPoint.x;
+      document.getElementsByName("downPointY")[0].value =downPoint.y;
+      
+      document.getElementsByName("upPointX")[0].value =upPoint.x;
+      document.getElementsByName("upPointY")[0].value =upPoint.y;
 
+  }
+    
+}
+function onInputChange(event)
+{
+  var downPoint=new THREE.Vector3, upPoint=new THREE.Vector3;
+      
+  downPoint.x = parseFloat(document.getElementsByName("downPointX")[0].value);
+  downPoint.y = parseFloat(document.getElementsByName("downPointY")[0].value);
+    
+  upPoint.x = parseFloat(document.getElementsByName("upPointX")[0].value);
+  upPoint.y = parseFloat(document.getElementsByName("upPointY")[0].value);
+    
+  if(camera.position.z>0)
+  {
+    upPoint.z = 0.1;
+    downPoint.z = 0.1;
+  }
+  else
+  {
+    upPoint.z = -0.1;
+    downPoint.z = -0.1;
+  }
+    
+  if(scene.getObjectByName("foldLine"))
+  {
+      var line = scene.getObjectByName("foldLine");
+      line.geometry.vertices[0]=upPoint;
+      line.geometry.vertices[1]=downPoint;
+      
+      line.geometry.dynamic = true;
+      line.geometry.verticesNeedUpdate = true;   
+  }
+    
+}
 function get3dPointZAxis(event)
 {
-    var vector = new THREE.Vector3(
+    //TO DO: project on to plane perpendiculare to the camrea not just the plan z=0
+    var vector = new THREE.Vector3();
+    tableHieght = document.getElementById("tableId").clientHeight;
+    vector.set(
         ( event.clientX / window.innerWidth ) * 2 - 1,
-        - ( event.clientY / window.innerHeight ) * 2 + 1,
-        1.0 );
+        - ( (event.clientY-tableHieght) / (window.innerHeight) ) * 2 + 1,
+         0.5);
+
     vector.unproject( camera );
     var dir = vector.sub( camera.position ).normalize();
     var distance = - camera.position.z / dir.z;
-    var pos = camera.position.clone().add( dir.multiplyScalar( distance ) );
-    
-    return pos;
+    var pos = camera.position.clone().add( dir.multiplyScalar( distance ) );  
+
+    return pos; 
 }
 
-//old code for making the fold line, couldnt get it to work. might have to go back to it if we want to remove the global var downpoint.
-/*function onMouseUp(event)
+function line_intersect(up, down, line)
 {
-  if(scene.getObjectByName("foldLine") && scene.getObjectByName("foldLine").geometry.vertices.length >= 3)
-    scene.remove(scene.getObjectByName("foldLine"));
+    var x1 = up.x;
+    var x2 = down.x;
+    var x3 = line.vertices[0].x;
+    var x4 = line.vertices[1].x;
     
-  var projector = new THREE.Projector();
-  var geometry = new THREE.Geometry();
+    var y1 = up.y;
+    var y2 = down.y;
+    var y3 = line.vertices[0].y;
+    var y4 = line.vertices[1].y;
     
-  if(scene.getObjectByName("foldLine"))
-    geometry = scene.getObjectByName("foldLine").geometry;
-    
-  var point = new THREE.Vector3(( event.clientX / window.innerWidth ) * 2 - 1,
-                               - ( event.clientY / window.innerHeight ) * 2 + 1, 
-                                   0.5);
-  projector.unprojectVector(point, camera);
-  geometry.vertices.push(point);
-  geometry.vertices.push( new THREE.Vector3(0,0,0.0));
-    
-  var material = new THREE.LineBasicMaterial({color: 0x79bc0f});
-  var foldLine = new THREE.Line(geometry, material,THREE.LineStrip);
-  foldLine.name = "foldLine";
-  
-  if(scene.getObjectByName("foldLine")==null)
-    scene.add(foldLine);
-}*/
+    var z = line.vertices[0].z
+
+    var ua, ub, denom = (y4 - y3)*(x2 - x1) - (x4 - x3)*(y2 - y1);
+    if (denom == 0) {
+        return null;
+    }
+    ua = ((x4 - x3)*(y1 - y3) - (y4 - y3)*(x1 - x3))/denom;
+    ub = ((x2 - x1)*(y1 - y3) - (y2 - y1)*(x1 - x3))/denom;
+    if(ub<0||ub>1)
+    {
+        return null;
+    }
+    return new THREE.Vector3(x1 + ua*(x2 - x1),y1 + ua*(y2 - y1),z);
+}
