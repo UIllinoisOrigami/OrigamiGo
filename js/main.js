@@ -94,15 +94,15 @@ function init() {
 		new THREE.Vector3(10.04,10.04,0),
 		new THREE.Vector3(10.04,-10.04,0)
 	);
-    var meshLine = new THREE.MeshLine();
-    meshLine.setGeometry( borderGeometry );
-    var material = new THREE.MeshLineMaterial({color: new THREE.Color(0xc05c5c ), lineWidth: 0.15});
-    var borders = new THREE.Mesh(meshLine.geometry, material);
+  var meshLine = new THREE.MeshLine();
+  meshLine.setGeometry( borderGeometry );
+  var material = new THREE.MeshLineMaterial({color: new THREE.Color(0xc05c5c ), lineWidth: 0.15});
+  var borders = new THREE.Mesh(meshLine.geometry, material);
     //var material = new THREE.LineBasicMaterial({color: 0xcd5c5c});
 	//var borders = new THREE.Line(borderGeometry, material);
 	borders.name = "borders";
 	scene.add(borders);
-    
+
 
   /*var geometry = new THREE.Geometry();
   geometry.vertices.push(new THREE.Vector3(10,-10,0));
@@ -171,3 +171,7 @@ function onKeyUp(event)
         performFold();
 
 }
+
+/*function clearScene(){
+
+}*/
