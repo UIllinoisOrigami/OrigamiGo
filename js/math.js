@@ -3,10 +3,6 @@ We will  need to find where the fold line intersects
 the boarder and visual fold lines and re-mesh those lines but I think we should 1st focus
 on the paper and then add the lines later.
 */
-//var new_geo = new Three.Geometry()
-//paperGeometry.faces.push(new THREE.Face3( 0, 1, 2 ))
-// delete paperGeometry.faces[i] <- need to search through to find? do this for now, find something clever later
-
 
 /**
 * Triangle re-mesh
@@ -31,7 +27,8 @@ function triRemesh(faces, line){ //triVerts=[[a,b,c],[e,f,g],[h,i,j]] lineVerts 
 
   for(var i = 0; i < faces_vertices.length; i++){
     //First check if face and line intersects
-    var line_intersection_points = lineTriInt(faces_vertices[i]);
+    var line_intersection_points = lineTriInt(faces_vertices[i]); //Only returns one point if line ends inside triangle. So need
+                                                                  // to figue out the other point.
     if(line_intersection_points.length != 0){
       var new_triangles = triRemesh_helper(faces_vertices[i], line_intersection_points); //[[[a,b,c], [e,f,g], [x,y,z]], ...]
       //Remove old face and insert new faces
@@ -89,7 +86,13 @@ function triRemesh_helper(triVerts, lineVerts){
       }
     }
 
-    //1.1: Vertex to inside of triangle - how to handle?
+    //1.1: Vertex to inside of triangle - Right now just returns 3 triangles, all sharing the inner point as a vertex.
+    /******* TO CHANGE ********/
+    var ret_tri1 = [other, triVerts[0], triVerts[1]],
+        ret_tri2 = [other, triVerts[1], triVerts[2]],
+        ret_tri3 = [other, triVerts[2], triVerts[0]];
+    return [ret_tri1, ret_tri2, ret_tri3];
+
   }
   //Case 2: 5 unique vertices
   else{
@@ -137,7 +140,19 @@ function triRemesh_helper(triVerts, lineVerts){
       }
       return[ret_tri1, ret_tri2, ret_tri3];
     }
-    //2.1: Side to inside triangle
+    //2.1: Side to inside triangle -  Currently partitions into 4 triangles
+    /******** TO CHANGE ********/
+    else{
+      var inner_vertex = lineVerts[0];
+      if(inner_vertex == points_on_line[0]){
+        inner_vertex = lineVerts[1];
+      }
+      var ret_tri1 = [inner_vertex, points_on_line[0], triVerts[0]],
+          ret_tri2 = [inner_vertex, triVerts[0], triVerts[1]],
+          ret_tri3 = [inner_vertex, triVerts[1], triVerts[2]],
+          ret_tri4 = [inner_vertex, triVerts[2], points_on_line[0]];
+      return [ret_tri1, ret_tri2, ret_tri3, ret_tri4];
+    }
 
   }
 }
