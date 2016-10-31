@@ -1,21 +1,37 @@
-/*triRemesh should take an array of face that may or may not be colliding with
-the fold line. It should then pop the faces that collide with the fold line from
-the scene, and finally insert the new remeshed faces and vertices. So you will need to
-remove some faces from the paper geometry and insert some faces and vertices into the paper geometry.
-You should not need to remove vertices because the re-meshed triangles should still
-use the old vertices (I think). We will  need to find where the fold line intersects
+/**
+We will  need to find where the fold line intersects
 the boarder and visual fold lines and re-mesh those lines but I think we should 1st focus
 on the paper and then add the lines later.
 */
+//var new_geo = new Three.Geometry()
+//paperGeometry.faces.push(new THREE.Face3( 0, 1, 2 ))
+// delete paperGeometry.faces[i] <- need to search through to find? do this for now, find something clever later
+
 
 /**
 * Triangle re-mesh
 * If a line intersects a triangle/face, calculates repartitioning
 * of face to maintain all triangular sub-components.
-* Takes an array of triangle vertices and the intersecting line's vertices.
-* Return an array of size-3 arrays of newly calculated triangle vertices.
+* Takes an array of triangle faces and a line object.
+* Removes faces from paperGeometry which collide with the line, and inserts new faces of the resultant remesh.
 */
-function triRemesh(triVerts, lineVerts){ //triVerts=[[a,b,c],[e,f,g],[h,i,j]] lineVerts = [[k,l,m],[n,o,p]]
+function triRemesh(faces, line){ //triVerts=[[a,b,c],[e,f,g],[h,i,j]] lineVerts = [[k,l,m],[n,o,p]]
+
+  var line_vertics = [[line.vertices[0].x, line.vertices[0].y, line.vertices[0].z], [line.vertices[1].x, line.vertices[1].y, line.vertices[1].z]];
+  //Build array of faces vertices -> [[face1v1, face1v2, face1v3], [face2v1, face2v2, face2v3], ...].
+  var faces_vertices = [];
+  for(var i = 0; i < faces.length; i++){
+    var fvertices = [
+      [paperGeometry.vertices[faces[i].a].x, paperGeometry.vertices[faces[i].a].y, paperGeometry.vertices[faces[i].a].z],
+      [paperGeometry.vertices[faces[i].b].x, paperGeometry.vertices[faces[i].b].y, paperGeometry.vertices[faces[i].b].z],
+      [paperGeometry.vertices[faces[i].c].x, paperGeometry.vertices[faces[i].c].y, paperGeometry.vertices[faces[i].c].z]
+    ];
+    faces_vertices.push(fvertices);
+  }
+}
+//Because let's not rewrite everything. Not pretty, maybe not efficient, can rewrite later.
+function triRemesh_helper(triVerts, lineVerts){
+
   var triside1 = [triVerts[0], triVerts[1]];
   var triside2 = [triVerts[1], triVerts[2]];
   var triside3 = [triVerts[2], triVerts[0]];
