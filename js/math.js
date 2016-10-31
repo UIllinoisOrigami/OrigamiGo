@@ -31,11 +31,28 @@ function triRemesh(faces, line){
     if(line_intersection_points.length != 0){
       //Needs handling if only one point of intersection returned
       if(line_intersection_points.length == 1){
-        //case 1: Line terminates on the triangle side. In this case, do not remesh.
-        if( removeRepeats(line_vertices.concat(line_intersection_points[0])).length == 2 ){
-          //Line may start or terminate on side of trangle. Need a funct to determine if a point lies within a region.
+        //case 1: Line has an endpoint inside triangle and line doesn't start on the triangle.
+        if(removeRepeats(line_vertices.concat(line_intersection_points[0])).length == 3){
+          if(pointInTriangleRegion(line_vertices[0], triVerts) == true){
+            line_intersection_points.push(line_vertices[0]);
+          }
+          else if(pointInTriangleRegion(line_vertices[1], triVerts) == true){
+            line_intersection_points.push(line_vertices[1]);
+          }
         }
-        //case 2: Line has an endpoint inside triangle. Need to figure out which point that is.
+        //case 2: Line terminates/starts on the triangle side, but does not continue within. In this case, do not remesh.
+        else{
+          //Line could be starting on triangle and terminating inside.
+          if(removeRepeats([line_intersection_points[0], line_vertices[0]]).length == 1 && pointInTriangleRegion(line_vertices[1], triVerts) == true){
+            line_intersection_points.push(line_vertices[1]);
+          }
+          else if(removeRepeats([line_intersection_points[0], line_vertices[1]]).length == 1 && pointInTriangleRegion(line_vertices[0], triVerts) == true){
+            line_intersection_points.push(line_vertices[0]);
+          }
+          else{
+            break;
+          }
+        }
       }
       var new_triangles = triRemesh_helper(faces_vertices[i], line_intersection_points); //[[[a,b,c], [e,f,g], [x,y,z]], ...]
       //Remove old face and insert new faces
@@ -221,11 +238,25 @@ function lineTriInt(triVerts, lineVerts){  //triVerts=[[a,b,c],[e,f,g],[h,i,j]] 
 * Takes a point and an array of vertices of a triangle.
 * Returns true if the point lies within the same plane and region of the trangle's interior
 * Return false otherwise
+* Note: This function returns true if the point is on any of the triangle edges.
 */
+/******* NEED TO CLEAN UP MEMORY **********/
 function pointInTriangleRegion(point, triVerts){
-  //ray must cros all boundaries, what about triangle vertices?
-  //x*(P1−P0)+y*(P2−P0)=P−P0
-  return false;
+  var vec1 = numeric.sub(triVerts[1],triVerts[0]);
+  var vec2 = numeric.sub(triVerts[2],triVerts[1]);
+  //Get normal of plane defined by triVerts
+  var normal = [vec1[1] * vec2[2] - vec1[2] * vec2[1], vec1[2] * vec2[0] - vec1[0] * vec2[2],vec1[0] * vec2[1] - vec1[1] * vec2[0]];
+  var normal_vec = new THREE.Vector3(normal[0], normal[1], normal[2]);
+  //We want to check if the ray passes through the triangle face, origin point is our point
+  var ray = new THREE.Ray(new THREE.Vector3(5,-1,0), normal_vec);
+  var tri_v_1 = new THREE.Vector3(triVerts[0][0], triVerts[0][1], triVerts[0][2]),
+      tri_v_2 = new THREE.Vector3(triVerts[1][0], triVerts[1][1], triVerts[1][2]),
+      tri_v_3 = new THREE.Vector3(triVerts[2][0], triVerts[2][1], triVerts[2][2]);
+  var new_vec = ray.intersectTriangle(tri_v_1, tri_v_2, tri_v_3, false, null);
+  if(new_vec == null){
+    return false;
+  }
+  return true;
 }
 /**
 * Find Face
