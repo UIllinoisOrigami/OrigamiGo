@@ -33,8 +33,24 @@ function triRemesh(faces, line){ //triVerts=[[a,b,c],[e,f,g],[h,i,j]] lineVerts 
     //First check if face and line intersects
     var line_intersection_points = lineTriInt(faces_vertices[i]);
     if(line_intersection_points.length != 0){
-      var new_triangles = triRemesh_helper(faces_vertices[i], line_intersection_points; 
-    //Remove old face and insert new faces
+      var new_triangles = triRemesh_helper(faces_vertices[i], line_intersection_points); //[[[a,b,c], [e,f,g], [x,y,z]], ...]
+      //Remove old face and insert new faces
+      delete paperGeometry.faces.splice(findFace(faces[i]),1);
+      for(var k = 0; k < new_triangles.length; k++){ //Each triangle
+        //Add all the points to the end paperGeometry.vertices
+        paperGeometry.vertices.push(
+          new THREE.Vector3(new_triangles[k][0][0],new_triangles[k][0][1],new_triangles[k][0][2]),
+          new THREE.Vector3(new_triangles[k][1][0],new_triangles[k][1][1],new_triangles[k][1][2]),
+          new THREE.Vector3(new_triangles[k][2][0],new_triangles[k][2][1],new_triangles[k][2][2])
+        );
+        //Create and add face from the last three points pushed
+        paperGeometry.faces.push(
+          new THREE.Face3(paperGeometry.vertices.length-3, paperGeometry.vertices.length-2, paperGeometry.vertices.length-1);
+        );
+      }
+      //mergeVertices to update vertices array
+      paperGeometry.mergeVertices();
+      // (??).verticesNeedUpdate, paperGeometry.elementsNeedUpdate = true
     }
   }
 }
@@ -125,7 +141,6 @@ function triRemesh_helper(triVerts, lineVerts){
 
   }
 }
-
 /**
 * Line-Triangle intersection
 * Takes an array of triangle vertices and an array of line vertices.
@@ -184,8 +199,8 @@ function lineTriInt(triVerts, lineVerts){  //triVerts=[[a,b,c],[e,f,g],[h,i,j]] 
 /**
 * Find Face
 * Takes a face, finds it's index in paperGeometry.faces, and returns it.
+* Will be too slow as face array grows, will need to optimize.
 */
-
 function findFace(face){
   //They should have the same paperGeometry.vertices indices for a/b/c components
   for(var i = 0; i < paperGeometry.faces.length; i++){
