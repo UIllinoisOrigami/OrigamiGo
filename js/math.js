@@ -17,7 +17,7 @@ on the paper and then add the lines later.
 */
 function triRemesh(faces, line){ //triVerts=[[a,b,c],[e,f,g],[h,i,j]] lineVerts = [[k,l,m],[n,o,p]]
 
-  var line_vertics = [[line.vertices[0].x, line.vertices[0].y, line.vertices[0].z], [line.vertices[1].x, line.vertices[1].y, line.vertices[1].z]];
+  var line_vertices = [[line.vertices[0].x, line.vertices[0].y, line.vertices[0].z], [line.vertices[1].x, line.vertices[1].y, line.vertices[1].z]];
   //Build array of faces vertices -> [[face1v1, face1v2, face1v3], [face2v1, face2v2, face2v3], ...].
   var faces_vertices = [];
   for(var i = 0; i < faces.length; i++){
@@ -28,8 +28,18 @@ function triRemesh(faces, line){ //triVerts=[[a,b,c],[e,f,g],[h,i,j]] lineVerts 
     ];
     faces_vertices.push(fvertices);
   }
+
+  for(var i = 0; i < faces_vertices.length; i++){
+    //First check if face and line intersects
+    var line_intersection_points = lineTriInt(faces_vertices[i]);
+    if(line_intersection_points.length != 0){
+      var new_triangles = triRemesh_helper(faces_vertices[i], line_intersection_points; 
+    //Remove old face and insert new faces
+    }
+  }
 }
-//Because let's not rewrite everything. Not pretty, maybe not efficient, can rewrite later.
+
+//Because let's not rewrite everything. Not pretty, probably not efficient, can rewrite later.
 function triRemesh_helper(triVerts, lineVerts){
 
   var triside1 = [triVerts[0], triVerts[1]];
@@ -171,6 +181,19 @@ function lineTriInt(triVerts, lineVerts){  //triVerts=[[a,b,c],[e,f,g],[h,i,j]] 
   return intersection_points
 }
 
+/**
+* Find Face
+* Takes a face, finds it's index in paperGeometry.faces, and returns it.
+*/
+
+function findFace(face){
+  //They should have the same paperGeometry.vertices indices for a/b/c components
+  for(var i = 0; i < paperGeometry.faces.length; i++){
+    if(paperGeometry.faces[i] == face){
+      return i;
+    }
+  }
+}
 /**
 * Remove Repeats
 * Quick and dirty way to remove any duplicate points in a point array.
