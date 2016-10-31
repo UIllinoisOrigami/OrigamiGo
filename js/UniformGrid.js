@@ -1,39 +1,18 @@
 /*
- * Javascript Quadtree 
- * @version 1.1.1
- * @licence MIT
- * @author Timo Hausmann
- * https://github.com/timohausmann/quadtree-js/
+ * Javascript Uniform Grid 
+ * @author Russell Michal
  */
- 
-/*
- Copyright © 2012 Timo Hausmann
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENthis. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
 
 ;(function(window, Math) {
  	
 	 /*
-	  * Quadtree Constructor
-	  * @param Object bounds		bounds of the node, object with x, y, width, height
-	  * @param Integer max_objects		(optional) max objects a node can hold before splitting into 4 subnodes (default: 10)
-	  * @param Integer max_levels		(optional) total max levels inside root Quadtree (default: 4) 
-	  * @param Integer level		(optional) deepth level, required for subnodes  
+	  * Uniform Grid  Constructor
+	  * @param x lower left corner of Uniform Grid default -10
+	  * @param y lower left corner of Uniform Grid default -10
+	  * @param width width of Uniform Grid default 20
+	  * @param height height of Uniform Grid default 20  
+      * @param cellWidth width of each cell in Uniform Grid default 1
+      * @param cellHeight height of each cell in Uniform Grid default 1
 	  */
 	function uniformGrid( x, y, width, height, cellWidth, cellHeight ) {		
 		this.x	    = x             || -10;
@@ -61,7 +40,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	
 	
 	/*
-	 * Split the node into 4 subnodes
+	 * old way to add to grid, travers through the grid, don not use.
 	 */
 	uniformGrid.prototype.oldAdd = function(vertices,id) {
         var minX=100 , maxX=-100, minY=100 , maxY=-100;
@@ -100,7 +79,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
         this.id++;
     };
-    uniformGrid.prototype.add = function(vertices, faces, id) {
+    
+    //adds the object with vertices and faces to the grid
+    uniformGrid.prototype.add = function(vertices, faces) {
         var minX=100 , maxX=-100, minY=100 , maxY=-100;
         for(var i=0; i<vertices.length; i++)
         {  
@@ -132,6 +113,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         this.id++;
     };
     
+    //old way of retrieving objects, travers through the grid, don not use.
 	uniformGrid.prototype.oldRetrieve = function(vertices) {
         var points = this.supercover_line(vertices[0],vertices[1]);
         var returnObjects = [];
@@ -164,6 +146,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
         return returnObjects;
     };
+    //retrieves the vertices of objects on the line specified by vertices
 	uniformGrid.prototype.retrieveV = function(vertices) {
         var points = this.supercover_line(vertices[0],vertices[1]);
         var returnObjects = [];
@@ -185,6 +168,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
         return returnObjects;
     };
+    //retrieves the faces of objects on the line specified by vertices
 	uniformGrid.prototype.retrieveF = function(vertices) {
         var points = this.supercover_line(vertices[0],vertices[1]);
         var returnObjects = [];
@@ -208,6 +192,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         return returnObjects;
     };
     
+    //used to retrieve objects on the line with points p0 and p1
      uniformGrid.prototype.supercover_line =function(p0, p1) {
         var dx = p1.x-p0.x, dy = p1.y-p0.y;
         var nx = Math.abs(dx), ny = Math.abs(dy);
@@ -236,6 +221,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
         return points;
     };
+    
+    //clears the grid
     uniformGrid.prototype.clear =function() {
         for(var i=0; i<this.height; i++)
         {
