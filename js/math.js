@@ -11,7 +11,7 @@ on the paper and then add the lines later.
 * Takes an array of triangle faces and a line object.
 * Removes faces from paperGeometry which collide with the line, and inserts new faces of the resultant remesh.
 */
-function triRemesh(faces, line){ //triVerts=[[a,b,c],[e,f,g],[h,i,j]] lineVerts = [[k,l,m],[n,o,p]]
+function triRemesh(faces, line){
 
   var line_vertices = [[line.vertices[0].x, line.vertices[0].y, line.vertices[0].z], [line.vertices[1].x, line.vertices[1].y, line.vertices[1].z]];
   //Build array of faces vertices -> [[face1v1, face1v2, face1v3], [face2v1, face2v2, face2v3], ...].
@@ -27,9 +27,16 @@ function triRemesh(faces, line){ //triVerts=[[a,b,c],[e,f,g],[h,i,j]] lineVerts 
 
   for(var i = 0; i < faces_vertices.length; i++){
     //First check if face and line intersects
-    var line_intersection_points = lineTriInt(faces_vertices[i]); //Only returns one point if line ends inside triangle. So need
-                                                                  // to figue out the other point.
+    var line_intersection_points = lineTriInt(faces_vertices[i]);
     if(line_intersection_points.length != 0){
+      //Needs handling if only one point of intersection returned
+      if(line_intersection_points.length == 1){
+        //case 1: Line terminates on the triangle side. In this case, do not remesh.
+        if( removeRepeats(line_vertices.concat(line_intersection_points[0])).length == 2 ){
+          //Line may start or terminate on side of trangle. Need a funct to determine if a point lies within a region.
+        }
+        //case 2: Line has an endpoint inside triangle. Need to figure out which point that is.
+      }
       var new_triangles = triRemesh_helper(faces_vertices[i], line_intersection_points); //[[[a,b,c], [e,f,g], [x,y,z]], ...]
       //Remove old face and insert new faces
       delete paperGeometry.faces.splice(findFace(faces[i]),1);
@@ -53,7 +60,7 @@ function triRemesh(faces, line){ //triVerts=[[a,b,c],[e,f,g],[h,i,j]] lineVerts 
 }
 
 //Because let's not rewrite everything. Not pretty, probably not efficient, can rewrite later.
-function triRemesh_helper(triVerts, lineVerts){
+function triRemesh_helper(triVerts, lineVerts){ //triVerts=[[a,b,c],[e,f,g],[h,i,j]] lineVerts = [[k,l,m],[n,o,p]]
 
   var triside1 = [triVerts[0], triVerts[1]];
   var triside2 = [triVerts[1], triVerts[2]];
@@ -144,7 +151,7 @@ function triRemesh_helper(triVerts, lineVerts){
     /******** TO CHANGE ********/
     else{
       var inner_vertex = lineVerts[0];
-      if(inner_vertex == points_on_line[0]){
+      if(removeRepeats([inner_vertex, points_on_line[0]]).length == 1){
         inner_vertex = lineVerts[1];
       }
       var ret_tri1 = [inner_vertex, points_on_line[0], triVerts[0]],
@@ -153,7 +160,6 @@ function triRemesh_helper(triVerts, lineVerts){
           ret_tri4 = [inner_vertex, triVerts[2], points_on_line[0]];
       return [ret_tri1, ret_tri2, ret_tri3, ret_tri4];
     }
-
   }
 }
 /**
@@ -210,7 +216,17 @@ function lineTriInt(triVerts, lineVerts){  //triVerts=[[a,b,c],[e,f,g],[h,i,j]] 
   }
   return intersection_points
 }
-
+/**
+* Point in Triangle Region
+* Takes a point and an array of vertices of a triangle.
+* Returns true if the point lies within the same plane and region of the trangle's interior
+* Return false otherwise
+*/
+function pointInTriangleRegion(point, triVerts){
+  //ray must cros all boundaries, what about triangle vertices?
+  //x*(P1−P0)+y*(P2−P0)=P−P0
+  return false;
+}
 /**
 * Find Face
 * Takes a face, finds it's index in paperGeometry.faces, and returns it.
@@ -238,7 +254,7 @@ function removeRepeats(points) {
 }
 /* *
 * Take point and array of line endpoints.
-* Returns true if point is on the line, else false.
+* Returns true if point is on the line segment, else false.
 */
 function pointOnLine(point, line){
   var l_a1 = line[0][0],
@@ -259,8 +275,13 @@ function pointOnLine(point, line){
                       a_min_p[0] * l_dir_vec[1] - a_min_p[1] * l_dir_vec[0]];  //perform cross product between a_min_p and l_dir_vec
   var mag_l_dir_vec = Math.abs(Math.sqrt(Math.pow(l_dir_vec[0],2) + Math.pow(l_dir_vec[1],2) + Math.pow(l_dir_vec[2],2)));
   var mag_cross  = Math.abs(Math.sqrt(Math.pow(cross_product[0],2) + Math.pow(cross_product[1],2) + Math.pow(cross_product[2],2)));
-  var dist = mag_cross/mag_l_dir_vec;
-  return dist == 0;
+  var p_distToLine = mag_cross/mag_l_dir_vec;
+
+  //Point to infinite line distance is 0, now check point P within the line segment AB, ie AP + PB = AB
+  if(p_distToLine == 0 && (pointToPointDist(point, line[0]) + pointToPointDist(line[1], point)) == pointToPointDist(line[0], line[1])){
+    return true
+  }
+  return false;
 }
 /**
 * Takes two points and calculates the distance
