@@ -1,7 +1,7 @@
 /**
 * @author Celestine Kao
 * Contains:
-* triRemesh(faces, line) <-- Works with faces = [paperGeometry.faces[i], paperGeometry.faces[j],...]. Weird bug when given just paperGeometry.faces.
+* triRemesh(faces, line) <-- Weird bug when given just paperGeometry.faces. See below for example usage.
 * triRemesh_helper(triVerts, lineVerts)
 * lineTriInt(triVerts, lineVerts)
 * pointInTriangleRegion(point, triVerts)
@@ -13,13 +13,36 @@
 * findSpanningLine(line, triSides) <-- TO DO
 */
 
-/** NOTES
+/** NOTES FOR LATER.
 * 1) We will  need to find where the fold line intersects
 *    the boarder and visual fold lines and re-mesh those lines but I think we should 1st focus
 *    on the paper and then add the lines later.
 * 2) Make funcs more robust, ie don't assume coplanarity.
 * 3) Figure out triRemesh weird bug.
 */
+
+/****
+*   var paperGeometry = new THREE.Geometry();
+*   paperGeometry.vertices.push(
+*     new THREE.Vector3(-10,-10,0),
+*     new THREE.Vector3(10,-10,0),
+*     new THREE.Vector3(10,10,0),
+*     new THREE.Vector3(-10,10,0)
+*   );
+*   paperGeometry.faces.push(
+*     new THREE.Face3( 0, 1, 2 ),
+*     new THREE.Face3( 0, 2, 3 )
+*   );
+*   var material = new THREE.MeshBasicMaterial({color: 0x6495ed, side: THREE.DoubleSide, wireframe: true});
+*   var paper = new THREE.Mesh(paperGeometry, material);
+*   scene.add(paper);
+*
+*   var geometry = new THREE.Geometry();
+*   geometry.vertices.push(new THREE.Vector3(-11,5,0));
+*   geometry.vertices.push(new THREE.Vector3(11,5,0));
+*
+*   triRemesh([paperGeometry.faces[0], paperGeometry.faces[1]], geometry)
+***/
 
 /**
 * Triangle re-mesh
@@ -285,7 +308,6 @@ function lineTriInt(triVerts, lineVerts){  //triVerts=[[a,b,c],[e,f,g],[h,i,j]] 
   }
   //console.log("lineTriInt intersection_points.length", intersection_points.length)
   return intersection_points
-
 }
 /**
 * Point in Triangle Region
@@ -332,7 +354,7 @@ function findFace(face){
 /**
 * Remove Repeats
 * Quick and dirty way to remove any duplicate points in a point array.
-* Takes point array, returns cleaned array.
+* Takes point array, returns cleaned array. But not the array type you'd expect.....
 */
 function removeRepeats(points){
   dictionaries_are_beautiful_things={}; //especially when you don't know jquery
