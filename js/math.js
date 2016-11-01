@@ -17,11 +17,11 @@
 * 1) We will  need to find where the fold line intersects
 *    the boarder and visual fold lines and re-mesh those lines but I think we should 1st focus
 *    on the paper and then add the lines later.
-* 2) Make funcs more robust, ie don't assume coplanarity.
+* 2) Make funcs more robust, ie don't assume coplanarity. And others?
 * 3) Figure out triRemesh weird bug.
 */
 
-/****
+/**** Calling triRemesh(faces, line)
 *   var paperGeometry = new THREE.Geometry();
 *   paperGeometry.vertices.push(
 *     new THREE.Vector3(-10,-10,0),
@@ -42,6 +42,7 @@
 *   geometry.vertices.push(new THREE.Vector3(11,5,0));
 *
 *   triRemesh([paperGeometry.faces[0], paperGeometry.faces[1]], geometry)
+*   //triRemesh(paperGeometry.faces, geometry) <-- Bad news bears. Don't do this. 
 ***/
 
 /**
