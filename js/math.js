@@ -1,15 +1,24 @@
 /**
- * @author Celestine Kao
- *
- * This file contains the following functions:
- */
+* @author Celestine Kao
+* Contains:
+* triRemesh(faces, line) <-- Works with faces = [paperGeometry.faces[i], paperGeometry.faces[j],...]. Weird bug when given just paperGeometry.faces.
+* triRemesh_helper(triVerts, lineVerts)
+* lineTriInt(triVerts, lineVerts)
+* pointInTriangleRegion(point, triVerts)
+* findFace(face)
+* removeRepeats(points) <-- Warning, only use this to check equality/repetition. The data type it returns is weird and not compabtible with arrays[].
+* pointOnLine(point, line)
+* pointToPointDist(point1, point2)
+* normalizeLine(line) <-- TO DO
+* findSpanningLine(line, triSides) <-- TO DO
+*/
 
-/** TO DO
+/** NOTES
 * 1) We will  need to find where the fold line intersects
 *    the boarder and visual fold lines and re-mesh those lines but I think we should 1st focus
 *    on the paper and then add the lines later.
-* 2) function normalizeLine(line)
-* 3) Make funcs more robust, ie don't assume coplanarity.
+* 2) Make funcs more robust, ie don't assume coplanarity.
+* 3) Figure out triRemesh weird bug.
 */
 
 /**
@@ -325,7 +334,7 @@ function findFace(face){
 * Quick and dirty way to remove any duplicate points in a point array.
 * Takes point array, returns cleaned array.
 */
-function removeRepeats(points) {
+function removeRepeats(points){
   dictionaries_are_beautiful_things={}; //especially when you don't know jquery
   for (var i=0;i<points.length;i++) {
     dictionaries_are_beautiful_things[points[i]]=0;
