@@ -1,6 +1,6 @@
 
 var scene, camera, renderer, downPoint, allFoldLines;
-var uGrid = new uniformGrid(-11,-11,22,22);
+var uGrid = new UniformGrid(-11,-11,22,22);
 
 init();
 animate();
