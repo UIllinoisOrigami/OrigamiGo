@@ -44,7 +44,6 @@
 *   triRemesh([paperGeometry.faces[0], paperGeometry.faces[1]], geometry)
 *   //triRemesh(paperGeometry.faces, geometry) <-- Bad news bears. Don't do this.
 ***/
-var paperGeometry = scene.getObjectByName("mesh").geometry;
 /**
 * Triangle re-mesh
 * If a line intersects a triangle/face, calculates repartitioning
@@ -53,6 +52,8 @@ var paperGeometry = scene.getObjectByName("mesh").geometry;
 * Removes faces from paperGeometry which collide with the line, and inserts new faces of the resultant remesh.
 */
 function triRemesh(faces, line){
+    var paperGeometry = scene.getObjectByName("mesh").geometry;
+
   //Should probably check valid and non-empty input being given
   var line_vertices = [[line.vertices[0].x, line.vertices[0].y, line.vertices[0].z], [line.vertices[1].x, line.vertices[1].y, line.vertices[1].z]];
   //console.log("line_vertices=", line_vertices[0], line_vertices[1])
