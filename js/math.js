@@ -42,7 +42,7 @@
 *   geometry.vertices.push(new THREE.Vector3(11,5,0));
 *
 *   triRemesh([paperGeometry.faces[0], paperGeometry.faces[1]], geometry)
-*   //triRemesh(paperGeometry.faces, geometry) <-- Bad news bears. Don't do this. 
+*   //triRemesh(paperGeometry.faces, geometry) <-- Bad news bears. Don't do this.
 ***/
 
 /**
@@ -341,7 +341,7 @@ function pointInTriangleRegion(point, triVerts){
 }
 /**
 * Find Face
-* Takes a face, finds it's index in paperGeometry.faces, and returns it.
+* Takes a face, finds its index in paperGeometry.faces, and returns it.
 * Will be too slow as face array grows, will need to optimize.
 */
 function findFace(face){
