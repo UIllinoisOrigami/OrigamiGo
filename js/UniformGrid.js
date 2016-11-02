@@ -161,7 +161,7 @@
             var floorX = Math.floor(points[p].x-this.x);
             var floorY = Math.floor(points[p].y-this.y);
 
-            returnObjects.concat(getObject(floorX,floorY));
+            returnObjects = returnObjects.concat(this.getObjects(floorX,floorY));
         }
         this.returnIds = [];
         return returnObjects;
@@ -198,7 +198,7 @@
                 var floorY = Math.floor(points[p].y-this.y);
                 
                 for(var h = floorY; h<this.height+this.y;h+=this.cellHeight)
-                    returnObjects.concat(getObject(floorX,h));
+                    returnObjects = returnObjects.concat(this.getObjects(floorX,h));
             }
             
             //get all cells on mouse line and determine if they are on mouse side of the line
