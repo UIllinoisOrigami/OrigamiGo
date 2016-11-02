@@ -44,7 +44,7 @@
 *   triRemesh([paperGeometry.faces[0], paperGeometry.faces[1]], geometry)
 *   //triRemesh(paperGeometry.faces, geometry) <-- Bad news bears. Don't do this.
 ***/
-
+var paperGeometry = scene.getObjectByName("mesh").geometry;
 /**
 * Triangle re-mesh
 * If a line intersects a triangle/face, calculates repartitioning
