@@ -1,9 +1,8 @@
-
-var scene, camera, renderer, downPoint, allFoldLines;
+var paperGeometry,scene, camera,renderer, downPoint, allFoldLines, controls;
 var uGrid = new UniformGrid(-11,-11,22,22);
 
-init();
-animate();
+(function(){
+"use strict";
 
 function init() {
   //SCENE
@@ -36,7 +35,7 @@ function init() {
   scene.add(light);
 
   //LOAD PAPER   <--- Figure out how to make front and back diff. colors. Will make for better visibility in folding animation.
-	var paperGeometry = new THREE.Geometry();
+	paperGeometry = new THREE.Geometry();
 	/*paperGeometry.vertices.push(
 		new THREE.Vector3(-10,-10,0),
 		new THREE.Vector3(10,-10,0),
@@ -53,11 +52,11 @@ function init() {
 	paper.name = "mesh";
 
 	scene.add(paper);*/
-    
+
     //***************************************************************************
     //add complex geometry for testing only function in drawstyle.js
-    var gridN=8;
-    
+   var gridN=8;
+
     terrainFromIteration(gridN, -10,10,-10,10, paperGeometry.vertices,paperGeometry.faces);
 
 	var material = new THREE.MeshBasicMaterial({color: 0x6495ed, side: THREE.DoubleSide});
@@ -99,7 +98,7 @@ function init() {
   scene.add(plane1);
   scene.add(plane2); */
 
-  //LOAD BORDER    <-----Investigate using buffer geometry?
+  //LOAD BORDER
 	//Need better way to add and remove lines. This borderGeometry will probably go poof.
 	var borderGeometry = new THREE.Geometry();
 	borderGeometry.vertices.push(
@@ -117,40 +116,6 @@ function init() {
 	//var borders = new THREE.Line(borderGeometry, material);
 	borders.name = "borders";
 	scene.add(borders);
-
-
-  /*var geometry = new THREE.Geometry();
-  geometry.vertices.push(new THREE.Vector3(10,-10,0));
-  geometry.vertices.push(new THREE.Vector3(-10,-10,0));
-  var material = new THREE.LineBasicMaterial({color: 0x79bc0f});
-  var line1 = new THREE.Line(geometry, material);
-  line1.name="boarderLine";
-
-  var geometry = new THREE.Geometry();
-  geometry.vertices.push(new THREE.Vector3(-10,-10,0));
-  geometry.vertices.push(new THREE.Vector3(-10,10,0));
-  var material = new THREE.LineBasicMaterial({color: 0x79bc0f});
-  var line2 = new THREE.Line(geometry, material);
-  line2.name="boarderLine";
-
-  var geometry = new THREE.Geometry();
-  geometry.vertices.push(new THREE.Vector3(-10,10,0));
-  geometry.vertices.push(new THREE.Vector3(10,10,0));
-  var material = new THREE.LineBasicMaterial({color: 0x79bc0f});
-  var line3 = new THREE.Line(geometry, material);
-  line3.name="boarderLine";
-
-  var geometry = new THREE.Geometry();
-  geometry.vertices.push(new THREE.Vector3(10,10,0));
-  geometry.vertices.push(new THREE.Vector3(10,-10,0));
-  var material = new THREE.LineBasicMaterial({color: 0x79bc0f});
-  var line4 = new THREE.Line(geometry, material);
-  line4.name="boarderLine";
-
-  scene.add(line1);
-  scene.add(line2);
-  scene.add(line3);
-  scene.add(line4);*/
 
   //ORBITCONTROLS
   controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -192,3 +157,8 @@ function onKeyUp(event)
 /*function clearScene(){
 
 }*/
+
+init();
+animate();
+
+})();
