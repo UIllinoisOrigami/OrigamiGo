@@ -29,8 +29,20 @@
 * Removes faces from paperGeometry which collide with the line, and inserts new faces of the resultant remesh.
 */
 function triRemesh(faces, line){
-  var new_paperGeometry = new THREE.Geometry();
   //Should probably check valid and non-empty input being given
+  var new_paperGeometry = new THREE.Geometry();
+  //Need to add all other non-colliding faces from old paperGeometry
+  for(var i = 0; i < paperGeometry.vertices.length; i++){
+    new_paperGeometry.vertices.push(
+      new THREE.Vector3(paperGeometry.vertices[i].x,paperGeometry.vertices[i].y,paperGeometry.vertices[i].z)
+    );
+  }
+  for(var i = 0; i < paperGeometry.faces.length; i++){
+    new_paperGeometry.faces.push(
+      new THREE.Face3(paperGeometry.faces[i].a, paperGeometry.faces[i].b, paperGeometry.faces[i].c)
+    );
+  }
+
   var line_vertices = [[line.vertices[0].x, line.vertices[0].y, line.vertices[0].z], [line.vertices[1].x, line.vertices[1].y, line.vertices[1].z]];
   console.log("line_vertices=", line_vertices[0], line_vertices[1])
   //Build array of faces vertices -> [[face1v1, face1v2, face1v3], [face2v1, face2v2, face2v3], ...].
@@ -38,14 +50,14 @@ function triRemesh(faces, line){
   console.log("faces.length=", faces.length)
   for(var i = 0; i < faces.length; i++){
     var fvertices = [
-      /*
+
       [paperGeometry.vertices[faces[i].a].x, paperGeometry.vertices[faces[i].a].y, paperGeometry.vertices[faces[i].a].z],
       [paperGeometry.vertices[faces[i].b].x, paperGeometry.vertices[faces[i].b].y, paperGeometry.vertices[faces[i].b].z],
       [paperGeometry.vertices[faces[i].c].x, paperGeometry.vertices[faces[i].c].y, paperGeometry.vertices[faces[i].c].z]
-      */
-      [paperGeometry.vertices[faces[i].a].x, paperGeometry.vertices[faces[i].a].y, 0.1],
+
+      /*[paperGeometry.vertices[faces[i].a].x, paperGeometry.vertices[faces[i].a].y, 0.1],
       [paperGeometry.vertices[faces[i].b].x, paperGeometry.vertices[faces[i].b].y, 0.1],
-      [paperGeometry.vertices[faces[i].c].x, paperGeometry.vertices[faces[i].c].y, 0.1]
+      [paperGeometry.vertices[faces[i].c].x, paperGeometry.vertices[faces[i].c].y, 0.1]*/
     ];
     console.log("fvertices=", fvertices)
     faces_vertices.push(fvertices);
@@ -102,19 +114,27 @@ function triRemesh(faces, line){
         console.log("Face being pushed",new_triangles[k]);
         var new_face = new THREE.Face3(new_paperGeometry.vertices.length-3, new_paperGeometry.vertices.length-2, new_paperGeometry.vertices.length-1);
         new_paperGeometry.faces.push(new_face);
+
+
       }
     }
   }
-  //Delete old paperGeometry
-  paperGeometry.dispose();
-
   //mergeVertices to update vertices array
   new_paperGeometry.mergeVertices();
-  var material = new THREE.MeshBasicMaterial({color: 0x6495ed, side: THREE.DoubleSide, wireframe: true});
-	var paper = new THREE.Mesh(new_paperGeometry, material);
-	paper.name = "mesh";
+  //Delete old paperGeometry
+  paperGeometry.dispose();
+  paperGeometry = null;
+  paper.geometry.dispose();
+  paper.geometry = null;
 
-	scene.add(paper);
+  paperGeometry = new_paperGeometry;
+
+  //Remove the faces that have split up from new_paperGeometry, ie paperGeometry
+  //not sure if this is super necessary... probably not. Probably just slow.
+  /*for(var i = 0; i < faces.length; i++){
+    delete paperGeometry.faces.splice(findFace(faces[i]),1);
+  }*/
+  paper.geometry = paperGeometry
 }
 
 //Because let's not rewrite everything. Not pretty, probably not efficient, can rewrite later.
@@ -332,8 +352,9 @@ function pointInTriangleRegion(point, triVerts){
 */
 function findFace(face){
   //They should have the same paperGeometry.vertices indices for a/b/c components
+  //Not sure if we can just do face == paperGeometry.faces[i], since that might just be comparing references
   for(var i = 0; i < paperGeometry.faces.length; i++){
-    if(paperGeometry.faces[i] == face){
+    if(paperGeometry.faces[i].a == face.a && paperGeometry.faces[i].b == face.b, paperGeometry.faces[i].c == face.c){
       return i;
     }
   }
