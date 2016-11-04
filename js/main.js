@@ -1,4 +1,11 @@
-var paperGeometry,scene, camera,renderer, downPoint, allFoldLines, controls;
+var paperGeometry,
+    paper;
+var scene,
+    camera,
+    renderer,
+    downPoint,
+    allFoldLines,
+    controls;
 var uGrid = new UniformGrid(-11,-11,22,22);
 
 (function(){
@@ -60,7 +67,7 @@ function init() {
     terrainFromIteration(gridN, -10,10,-10,10, paperGeometry.vertices,paperGeometry.faces);
 
 	var material = new THREE.MeshBasicMaterial({color: 0x6495ed, side: THREE.DoubleSide});
-	var paper = new THREE.Mesh(paperGeometry, material);
+	paper = new THREE.Mesh(paperGeometry, material);
 	paper.name = "mesh";
 
 	scene.add(paper);
