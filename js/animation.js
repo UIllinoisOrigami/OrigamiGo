@@ -1,9 +1,7 @@
 
 function performFold(){
-    var paperGeometry = scene.getObjectByName("mesh").geometry;
-
-    console.log("performfold");
-    if(scene.getObjectByName("foldLine"))
+    //var paperGeometry = scene.getObjectByName("mesh").geometry;
+  if(scene.getObjectByName("foldLine"))
     {
       var foldingLine = scene.getObjectByName("foldLine");
       foldingLine.name = "visualFoldLine";
@@ -11,10 +9,9 @@ function performFold(){
       foldingLine.visible=false;
 
 
-      //triRemesh([paperGeometry.faces[0], paperGeometry.faces[1]], foldingLine.geometry);
-
       var possibleCollisions = uGrid.retrieveF(foldingLine.geometry.vertices);
       triRemesh(possibleCollisions, foldingLine.geometry);
+
       //Object3D.rotateOnAxis( axis, angle );
 
       //performfold on all mesh, visualFoldLines, and boarderLines.
