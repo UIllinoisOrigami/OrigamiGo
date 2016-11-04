@@ -21,29 +21,6 @@
 * 3) Figure out triRemesh weird bug.
 */
 
-/**** Calling triRemesh(faces, line)
-*   var paperGeometry = new THREE.Geometry();
-*   paperGeometry.vertices.push(
-*     new THREE.Vector3(-10,-10,0),
-*     new THREE.Vector3(10,-10,0),
-*     new THREE.Vector3(10,10,0),
-*     new THREE.Vector3(-10,10,0)
-*   );
-*   paperGeometry.faces.push(
-*     new THREE.Face3( 0, 1, 2 ),
-*     new THREE.Face3( 0, 2, 3 )
-*   );
-*   var material = new THREE.MeshBasicMaterial({color: 0x6495ed, side: THREE.DoubleSide, wireframe: true});
-*   var paper = new THREE.Mesh(paperGeometry, material);
-*   scene.add(paper);
-*
-*   var geometry = new THREE.Geometry();
-*   geometry.vertices.push(new THREE.Vector3(-11,5,0));
-*   geometry.vertices.push(new THREE.Vector3(11,5,0));
-*
-*   triRemesh([paperGeometry.faces[0], paperGeometry.faces[1]], geometry)
-*   //triRemesh(paperGeometry.faces, geometry) <-- Bad news bears. Don't do this.
-***/
 /**
 * Triangle re-mesh
 * If a line intersects a triangle/face, calculates repartitioning
@@ -52,20 +29,25 @@
 * Removes faces from paperGeometry which collide with the line, and inserts new faces of the resultant remesh.
 */
 function triRemesh(faces, line){
-    var paperGeometry = scene.getObjectByName("mesh").geometry;
-
+  var new_paperGeometry = new THREE.Geometry();
   //Should probably check valid and non-empty input being given
   var line_vertices = [[line.vertices[0].x, line.vertices[0].y, line.vertices[0].z], [line.vertices[1].x, line.vertices[1].y, line.vertices[1].z]];
-  //console.log("line_vertices=", line_vertices[0], line_vertices[1])
+  console.log("line_vertices=", line_vertices[0], line_vertices[1])
   //Build array of faces vertices -> [[face1v1, face1v2, face1v3], [face2v1, face2v2, face2v3], ...].
   var faces_vertices = [];
-  //console.log("faces.length=", faces.length)
+  console.log("faces.length=", faces.length)
   for(var i = 0; i < faces.length; i++){
     var fvertices = [
+      /*
       [paperGeometry.vertices[faces[i].a].x, paperGeometry.vertices[faces[i].a].y, paperGeometry.vertices[faces[i].a].z],
       [paperGeometry.vertices[faces[i].b].x, paperGeometry.vertices[faces[i].b].y, paperGeometry.vertices[faces[i].b].z],
       [paperGeometry.vertices[faces[i].c].x, paperGeometry.vertices[faces[i].c].y, paperGeometry.vertices[faces[i].c].z]
+      */
+      [paperGeometry.vertices[faces[i].a].x, paperGeometry.vertices[faces[i].a].y, 0.1],
+      [paperGeometry.vertices[faces[i].b].x, paperGeometry.vertices[faces[i].b].y, 0.1],
+      [paperGeometry.vertices[faces[i].c].x, paperGeometry.vertices[faces[i].c].y, 0.1]
     ];
+    console.log("fvertices=", fvertices)
     faces_vertices.push(fvertices);
   }
 
@@ -76,16 +58,16 @@ function triRemesh(faces, line){
     if(line_intersection_points.length > 0){
       //Needs special handling if only one point of intersection returned
       if(line_intersection_points.length == 1){
-        //console.log("One point of intersection", line_intersection_points[0])
+        console.log("One point of intersection", line_intersection_points[0])
         //case 1: Line has an endpoint inside triangle and line doesn't start on the triangle.
         if(removeRepeats(line_vertices.concat([line_intersection_points[0]])).length == 3){
-          //console.log("Case 1.1")
+          console.log("Case 1.1")
           if(pointInTriangleRegion(line_vertices[0], faces_vertices[i]) == true){
-            //console.log("line_vertices[0] in region", line_vertices[0])
+            console.log("line_vertices[0] in region", line_vertices[0])
             line_intersection_points.push(line_vertices[0]);
           }
           else if(pointInTriangleRegion(line_vertices[1], faces_vertices[i]) == true){
-            //console.log("line_vertices[1] in region")
+            console.log("line_vertices[1] in region")
             line_intersection_points.push(line_vertices[1]);
           }
         }
@@ -107,29 +89,32 @@ function triRemesh(faces, line){
       }
       //console.log("intersection points", line_intersection_points[0],line_intersection_points[1])
       var new_triangles = triRemesh_helper(faces_vertices[i], line_intersection_points); //[[[a,b,c], [e,f,g], [x,y,z]], ...]
-      //Remove old face and insert new faces
-      delete paperGeometry.faces.splice(findFace(faces[i]),1);
+      console.log("new_triangles.length=", new_triangles.length);
       for(var k = 0; k < new_triangles.length; k++){ //Each triangle
-        //Add all the points to the end paperGeometry.vertices
-        paperGeometry.vertices.push(
+        //Add all the points to the end new_paperGeometry.vertices
+        //console.log("new_triangles.length[k][1]=", new_triangles[k][1].length);
+        new_paperGeometry.vertices.push(
           new THREE.Vector3(new_triangles[k][0][0],new_triangles[k][0][1],new_triangles[k][0][2]),
           new THREE.Vector3(new_triangles[k][1][0],new_triangles[k][1][1],new_triangles[k][1][2]),
           new THREE.Vector3(new_triangles[k][2][0],new_triangles[k][2][1],new_triangles[k][2][2])
         );
         //Create and add face from the last three points pushed
-        var new_face = new THREE.Face3(paperGeometry.vertices.length-3, paperGeometry.vertices.length-2, paperGeometry.vertices.length-1);
-        //var new_face = new THREE.Face3(paperGeometry.vertices[0], paperGeometry.vertices[1], paperGeometry.vertices[2]);
-        //console.log("PUSH FACE")
-        paperGeometry.faces.push(new_face);
-
+        console.log("Face being pushed",new_triangles[k]);
+        var new_face = new THREE.Face3(new_paperGeometry.vertices.length-3, new_paperGeometry.vertices.length-2, new_paperGeometry.vertices.length-1);
+        new_paperGeometry.faces.push(new_face);
       }
-      //mergeVertices to update vertices array
-      paperGeometry.mergeVertices();
-      paperGeometry.verticesNeedUpdate = true;  //unsure...
-      paperGeometry.elementsNeedUpdate = true;  //unsure...
     }
-    //console.log("No division made")
   }
+  //Delete old paperGeometry
+  paperGeometry.dispose();
+
+  //mergeVertices to update vertices array
+  new_paperGeometry.mergeVertices();
+  var material = new THREE.MeshBasicMaterial({color: 0x6495ed, side: THREE.DoubleSide, wireframe: true});
+	var paper = new THREE.Mesh(new_paperGeometry, material);
+	paper.name = "mesh";
+
+	scene.add(paper);
 }
 
 //Because let's not rewrite everything. Not pretty, probably not efficient, can rewrite later.
@@ -395,7 +380,7 @@ function pointOnLine(point, line){
   //console.log("cross_product=", cross_product)
   var mag_l_dir_vec = Math.abs(Math.sqrt(Math.pow(l_dir_vec[0],2) + Math.pow(l_dir_vec[1],2) + Math.pow(l_dir_vec[2],2)));
   var mag_cross  = Math.abs(Math.sqrt(Math.pow(cross_product[0],2) + Math.pow(cross_product[1],2) + Math.pow(cross_product[2],2)));
-  var p_distToLine = mag_cross/mag_l_dir_vec;
+  var p_distToLine = (mag_cross/mag_l_dir_vec).toFixed(4);
   //console.log("p_distToLine", p_distToLine)
   //console.log((pointToPointDist(point, line[0]) + pointToPointDist(line[1], point)).toFixed(3))
   //console.log(pointToPointDist(line[0], line[1]).toFixed(3))
