@@ -17,7 +17,7 @@ function checkDrawStyle(){
         child.visible=false;
       else if(child instanceof THREE.Mesh && child.name=="borders")
         child.visible=true;
-    });    
+    });
   }
   else if (document.getElementById('wireframe').checked) {
     scene.traverse( function(child){
@@ -37,7 +37,7 @@ function checkDrawStyle(){
         child.visible=true;
       else if(child instanceof THREE.Mesh && child.name=="borders")
         child.visible=false;
-    });    
+    });
   }
 }
 
@@ -48,8 +48,8 @@ function terrainFromIteration(n, minX,maxX,minY,maxY, vertexArray, faceArray)
     var deltaY=(maxY-minY)/n;
     for(var i=0;i<=n;i++)
        for(var j=0;j<=n;j++)
-       {           
-           vertexArray.push(new THREE.Vector3(minX+deltaX*j,minY+deltaY*i,0.0));
+       {
+           vertexArray.push(new THREE.Vector3(minX+deltaX*j,minY+deltaY*i,0.1));
        }
 
     var numT=0;
