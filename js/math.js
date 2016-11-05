@@ -2,6 +2,8 @@
 * @author Celestine Kao
 * Contains:
 * triRemesh(faces, line) <-- Weird bug when given just paperGeometry.faces. See below for example usage.
+* rayTraceLineTriIntersection(triangle, line)
+* f_VectorEquals(point1, point2)
 * triRemesh_helper(triVerts, lineVerts)
 * lineTriInt(triVerts, lineVerts)
 * pointInTriangleRegion(point, triVerts)
@@ -38,6 +40,8 @@ function triRemesh(faces, line){
     );
   }
   for(var i = 0; i < paperGeometry.faces.length; i++){
+    //Only add non colliding faces, so need to check as each face for collision, and if yes, don't push to new geometry
+    //But we can add to a colliding_faces arr!
     new_paperGeometry.faces.push(
       new THREE.Face3(paperGeometry.faces[i].a, paperGeometry.faces[i].b, paperGeometry.faces[i].c)
     );
@@ -137,6 +141,11 @@ function rayTraceLineTriIntersection(triangle, line){
       vertex_two = paperGeometry.vertices[triangle.b],
       vertex_three = paperGeometry.vertices[triangle.c];
 
+  console.log("side1", vertex_one, vertex_two)
+  console.log("side2", vertex_two, vertex_three)
+  console.log("side3", vertex_three, vertex_one)
+  console.log("line", line.geometry.vertices[0],line.geometry.vertices[1])
+
   //Make LineSegments object with lines for each side
   var geometry1 = new THREE.Geometry();
   geometry1.vertices.push(vertex_one, vertex_two);
@@ -147,7 +156,7 @@ function rayTraceLineTriIntersection(triangle, line){
   var line2 = new THREE.LineSegments(geometry2);
 
   var geometry3 = new THREE.Geometry();
-  geometry2.vertices.push(vertex_three,vertex_one);
+  geometry3.vertices.push(vertex_three,vertex_one);
   var line3 = new THREE.LineSegments(geometry3);
 
   //Calculate the direction vector and normalize
@@ -158,14 +167,67 @@ function rayTraceLineTriIntersection(triangle, line){
   var ray = new THREE.Raycaster(origin, dir_vec);
 
   var intersections = ray.intersectObjects([line1, line2, line3]);
-  console.log("intersections", intersections, "length", intersections.length)
+  console.log("intersections", intersections)
 
   //Getting float point problems again.
-  //Also check intersection point isn't beyond limits of line.
+  var intersections_points = [];
+  for(var i = 0; i < intersections.length; i++){
+    intersections_points.push(intersections[i].point);
+  }
 
-  return intersections;
+  /*console.log(intersections_points[0], intersections_points[1], intersections_points[2]);
+  intersections_points.sort(function comparator(a,b){return a.x - b.x;});
+  console.log(intersections_points[0], intersections_points[1], intersections_points[2]);
+  */
+  //Need to remove repeating elements.
+  for(var i = 0; i < intersections_points.length-1; i++){
+    var curr = intersections_points[i];
+    //Repeat occurs when abs(a-b) < .0001
+    for(var k = i+1; k < intersections_points.length; k++){
+      var to_check = intersections_points[k];
+      if(f_VectorEquals(curr,to_check)){
+        delete intersections_points.splice(i,1);
+      }
+    }
+  }
+
+  //If any two of the vertices in the list, then a triangle side was on line, so reject and return empty arr[]
+  var count_vertices = 0;
+  for(var i = 0; i<intersections_points.length; i++){
+    if(f_VectorEquals(intersections_points[i],vertex_one)|| f_VectorEquals(intersections_points[i],vertex_two) || f_VectorEquals(intersections_points[i],vertex_three)){
+      count_vertices++;
+    }
+  }
+  if(count_vertices > 1){
+    return [];
+  }
+  //Remove any vertices outside the bounds of the line.
+  var ray_length = origin.distanceTo(line.geometry.vertices[1])
+  for(var i = 0; i<intersections_points.length; i++){
+    if(origin.distanceTo(intersections_points[i]) > ray_length && Math.abs(origin.distanceTo(intersections_points[i]) - ray_length) > .0001){
+      delete intersections_points.splice(i,1);
+    }
+  }
+
+  return intersections_points;
 }
 
+/**
+* Floating Vector Equals
+* Floating point sucks so need to check equality in a more special way
+* @param point1 - Vector3
+* @param point2 - Vector3
+*/
+function f_VectorEquals(point1, point2){
+  var x_diff = Math.abs(point1.x - point2.x) < .0001,
+      y_diff = Math.abs(point1.y - point2.y)< .0001,
+      z_diff = Math.abs(point1.z - point2.z) < .0001;
+
+  if(x_diff && y_diff && z_diff){
+    return true;
+  }
+  return false;
+}
 //Because let's not rewrite everything. Not pretty, probably not efficient, can rewrite later.
 /**
 * Triangle Remesh Helper
