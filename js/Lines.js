@@ -32,7 +32,7 @@ function onMouseUp(event)
         upPoint.z = -0.1;
         downPoint.z = -0.1;
       }
-      
+
       //the special line that is actually a triangle strip lets use set the width so we can see it... it also is not fun to work with. this is how we get the vertices out of the geometry.
       var borders = scene.getObjectByName("borders")
       var intersections = [];
@@ -64,34 +64,34 @@ function onMouseUp(event)
              downPoint.y = intersections[i].y;
          }
       }
-   
-      geometry.vertices.push(upPoint);
+      
       geometry.vertices.push(downPoint);
+      geometry.vertices.push(upPoint);
       var material = new THREE.LineBasicMaterial({color: 0x79bc0f});
       var foldLine = new THREE.Line(geometry, material);
       foldLine.name = "foldLine";
 
       scene.add(foldLine);
-      
+
       document.getElementsByName("downPointX")[0].value =downPoint.x;
       document.getElementsByName("downPointY")[0].value =downPoint.y;
-      
+
       document.getElementsByName("upPointX")[0].value =upPoint.x;
       document.getElementsByName("upPointY")[0].value =upPoint.y;
 
   }
-    
+
 }
 function onInputChange(event)
 {
   var downPoint=new THREE.Vector3, upPoint=new THREE.Vector3;
-      
+
   downPoint.x = parseFloat(document.getElementsByName("downPointX")[0].value);
   downPoint.y = parseFloat(document.getElementsByName("downPointY")[0].value);
-    
+
   upPoint.x = parseFloat(document.getElementsByName("upPointX")[0].value);
   upPoint.y = parseFloat(document.getElementsByName("upPointY")[0].value);
-    
+
   if(camera.position.z>0)
   {
     upPoint.z = 0.1;
@@ -102,17 +102,17 @@ function onInputChange(event)
     upPoint.z = -0.1;
     downPoint.z = -0.1;
   }
-    
+
   if(scene.getObjectByName("foldLine"))
   {
       var line = scene.getObjectByName("foldLine");
       line.geometry.vertices[0]=upPoint;
       line.geometry.vertices[1]=downPoint;
-      
+
       line.geometry.dynamic = true;
-      line.geometry.verticesNeedUpdate = true;   
+      line.geometry.verticesNeedUpdate = true;
   }
-    
+
 }
 function get3dPointZAxis(event)
 {
@@ -127,9 +127,9 @@ function get3dPointZAxis(event)
     vector.unproject( camera );
     var dir = vector.sub( camera.position ).normalize();
     var distance = - camera.position.z / dir.z;
-    var pos = camera.position.clone().add( dir.multiplyScalar( distance ) );  
+    var pos = camera.position.clone().add( dir.multiplyScalar( distance ) );
 
-    return pos; 
+    return pos;
 }
 
 function line_intersect(up, down, line)
@@ -138,12 +138,12 @@ function line_intersect(up, down, line)
     var x2 = down.x;
     var x3 = line.vertices[0].x;
     var x4 = line.vertices[1].x;
-    
+
     var y1 = up.y;
     var y2 = down.y;
     var y3 = line.vertices[0].y;
     var y4 = line.vertices[1].y;
-    
+
     var z = line.vertices[0].z
 
     var ua, ub, denom = (y4 - y3)*(x2 - x1) - (x4 - x3)*(y2 - y1);
