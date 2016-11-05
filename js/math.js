@@ -44,48 +44,39 @@ function triRemesh(faces, line){
   }
 
   var line_vertices = [[line.vertices[0].x, line.vertices[0].y, line.vertices[0].z], [line.vertices[1].x, line.vertices[1].y, line.vertices[1].z]];
-  console.log("line_vertices=", line_vertices[0], line_vertices[1])
   //Build array of faces vertices -> [[face1v1, face1v2, face1v3], [face2v1, face2v2, face2v3], ...].
   var faces_vertices = [];
-  console.log("faces.length=", faces.length)
   for(var i = 0; i < faces.length; i++){
     var fvertices = [
 
-      [paperGeometry.vertices[faces[i].a].x, paperGeometry.vertices[faces[i].a].y, paperGeometry.vertices[faces[i].a].z],
+      /*[paperGeometry.vertices[faces[i].a].x, paperGeometry.vertices[faces[i].a].y, paperGeometry.vertices[faces[i].a].z],
       [paperGeometry.vertices[faces[i].b].x, paperGeometry.vertices[faces[i].b].y, paperGeometry.vertices[faces[i].b].z],
       [paperGeometry.vertices[faces[i].c].x, paperGeometry.vertices[faces[i].c].y, paperGeometry.vertices[faces[i].c].z]
-
-      /*[paperGeometry.vertices[faces[i].a].x, paperGeometry.vertices[faces[i].a].y, 0.1],
+      */
+      [paperGeometry.vertices[faces[i].a].x, paperGeometry.vertices[faces[i].a].y, 0.1],
       [paperGeometry.vertices[faces[i].b].x, paperGeometry.vertices[faces[i].b].y, 0.1],
-      [paperGeometry.vertices[faces[i].c].x, paperGeometry.vertices[faces[i].c].y, 0.1]*/
+      [paperGeometry.vertices[faces[i].c].x, paperGeometry.vertices[faces[i].c].y, 0.1]
     ];
-    console.log("fvertices=", fvertices)
     faces_vertices.push(fvertices);
   }
 
   for(var i = 0; i < faces_vertices.length; i++){
-    //console.log("Face Vertices:", faces_vertices[i][0],faces_vertices[i][1],faces_vertices[i][2]);
     //First check if face and line intersects
     var line_intersection_points = lineTriInt(faces_vertices[i], line_vertices);
     if(line_intersection_points.length > 0){
       //Needs special handling if only one point of intersection returned
       if(line_intersection_points.length == 1){
-        console.log("One point of intersection", line_intersection_points[0])
         //case 1: Line has an endpoint inside triangle and line doesn't start on the triangle.
         if(removeRepeats(line_vertices.concat([line_intersection_points[0]])).length == 3){
-          console.log("Case 1.1")
           if(pointInTriangleRegion(line_vertices[0], faces_vertices[i]) == true){
-            console.log("line_vertices[0] in region", line_vertices[0])
             line_intersection_points.push(line_vertices[0]);
           }
           else if(pointInTriangleRegion(line_vertices[1], faces_vertices[i]) == true){
-            console.log("line_vertices[1] in region")
             line_intersection_points.push(line_vertices[1]);
           }
         }
         //case 2: Line terminates/starts on the triangle side, but does not continue within. In this case, do not remesh.
         else{
-          //console.log("Case 1.2")
           //Line could be starting on triangle and terminating inside.
           if(removeRepeats([line_intersection_points[0], line_vertices[0]]).length == 1 && pointInTriangleRegion(line_vertices[1], faces_vertices[i]) == true){
             line_intersection_points.push(line_vertices[1]);
@@ -99,23 +90,17 @@ function triRemesh(faces, line){
         }
 
       }
-      //console.log("intersection points", line_intersection_points[0],line_intersection_points[1])
       var new_triangles = triRemesh_helper(faces_vertices[i], line_intersection_points); //[[[a,b,c], [e,f,g], [x,y,z]], ...]
-      console.log("new_triangles.length=", new_triangles.length);
       for(var k = 0; k < new_triangles.length; k++){ //Each triangle
         //Add all the points to the end new_paperGeometry.vertices
-        //console.log("new_triangles.length[k][1]=", new_triangles[k][1].length);
         new_paperGeometry.vertices.push(
           new THREE.Vector3(new_triangles[k][0][0],new_triangles[k][0][1],new_triangles[k][0][2]),
           new THREE.Vector3(new_triangles[k][1][0],new_triangles[k][1][1],new_triangles[k][1][2]),
           new THREE.Vector3(new_triangles[k][2][0],new_triangles[k][2][1],new_triangles[k][2][2])
         );
         //Create and add face from the last three points pushed
-        console.log("Face being pushed",new_triangles[k]);
         var new_face = new THREE.Face3(new_paperGeometry.vertices.length-3, new_paperGeometry.vertices.length-2, new_paperGeometry.vertices.length-1);
         new_paperGeometry.faces.push(new_face);
-
-
       }
     }
   }
@@ -131,10 +116,54 @@ function triRemesh(faces, line){
 
   //Remove the faces that have split up from new_paperGeometry, ie paperGeometry
   //not sure if this is super necessary... probably not. Probably just slow.
+  // TOOOO SLOOOOW
   /*for(var i = 0; i < faces.length; i++){
     delete paperGeometry.faces.splice(findFace(faces[i]),1);
   }*/
   paper.geometry = paperGeometry
+}
+
+/**
+* Ray Trace Line Triangle intersection
+* Uses ray tracing with to determine the first point of intersection (if any)
+* of a line with a triangle. Return Vector3 point of intersection else null.
+* @param triangle - Face object
+* @param line - Line geometry
+*/
+function rayTraceLineTriIntersection(triangle, line){
+
+  //Pull out points from triangle as Vector3's
+  var vertex_one = paperGeometry.vertices[triangle.a],
+      vertex_two = paperGeometry.vertices[triangle.b],
+      vertex_three = paperGeometry.vertices[triangle.c];
+
+  //Make LineSegments object with lines for each side
+  var geometry1 = new THREE.Geometry();
+  geometry1.vertices.push(vertex_one, vertex_two);
+  var line1 = new THREE.LineSegments(geometry1);
+
+  var geometry2 = new THREE.Geometry();
+  geometry2.vertices.push(vertex_two,vertex_three);
+  var line2 = new THREE.LineSegments(geometry2);
+
+  var geometry3 = new THREE.Geometry();
+  geometry2.vertices.push(vertex_three,vertex_one);
+  var line3 = new THREE.LineSegments(geometry3);
+
+  //Calculate the direction vector and normalize
+  var dir_vec = new THREE.Vector3(line.geometry.vertices[1].x - line.geometry.vertices[0].x, line.geometry.vertices[1].y - line.geometry.vertices[0].y, line.geometry.vertices[1].z - line.geometry.vertices[0].z);
+  dir_vec.normalize();
+  //Create ray from line starting point line.vertices[0]
+  var origin = line.geometry.vertices[0]
+  var ray = new THREE.Raycaster(origin, dir_vec);
+
+  var intersections = ray.intersectObjects([line1, line2, line3]);
+  console.log("intersections", intersections, "length", intersections.length)
+
+  //Getting float point problems again.
+  //Also check intersection point isn't beyond limits of line.
+
+  return intersections;
 }
 
 //Because let's not rewrite everything. Not pretty, probably not efficient, can rewrite later.
@@ -155,7 +184,6 @@ function triRemesh_helper(triVerts, lineVerts){ //triVerts=[[a,b,c],[e,f,g],[h,i
 
   //Case 1: 1 point of intersection (4 unique vertices)
   if(point_arr.length == 4){
-    //console.log("triRemesh_helper, 4 unique")
     var vertex = lineVerts[0];
     var other = lineVerts[1];
     if(removeRepeats(triVerts.concat([lineVerts[1]])).length == 3){
@@ -170,11 +198,8 @@ function triRemesh_helper(triVerts, lineVerts){ //triVerts=[[a,b,c],[e,f,g],[h,i
       }
     }
     //1.0: Vertex to side
-    //console.log("vertex:", vertex, "other:", other);
     for(var i = 0; i < 3 ; i++){
-      //console.log("triside[i]", trisides[i][0], trisides[i][1])
       if(pointOnLine(other,trisides[i]) == true){ //Line goes through both a vertex and a side
-        //console.log("Vertex to side")
         var ret_tri1 = [vertex, other, no_l_verts[0]],
             ret_tri2 = [vertex, other, no_l_verts[1]];
         return [ret_tri1, ret_tri2];
@@ -183,7 +208,6 @@ function triRemesh_helper(triVerts, lineVerts){ //triVerts=[[a,b,c],[e,f,g],[h,i
 
     //1.1: Vertex to inside of triangle - Right now just returns 3 triangles, all sharing the inner point as a vertex.
     /******* TO CHANGE ********/
-    //console.log("Vertex to inside")
     var ret_tri1 = [other, triVerts[0], triVerts[1]],
         ret_tri2 = [other, triVerts[1], triVerts[2]],
         ret_tri3 = [other, triVerts[2], triVerts[0]];
@@ -247,6 +271,7 @@ function triRemesh_helper(triVerts, lineVerts){ //triVerts=[[a,b,c],[e,f,g],[h,i
           ret_tri2 = [inner_vertex, triVerts[0], triVerts[1]],
           ret_tri3 = [inner_vertex, triVerts[1], triVerts[2]],
           ret_tri4 = [inner_vertex, triVerts[2], points_on_line[0]];
+
       return [ret_tri1, ret_tri2, ret_tri3, ret_tri4];
     }
   }
@@ -283,13 +308,13 @@ function lineTriInt(triVerts, lineVerts){  //triVerts=[[a,b,c],[e,f,g],[h,i,j]] 
         d3 = trisides[i][1][2];
 
     var A = [
-      [ d1-c1 , -(b1 - a1) ],
-      [ d2-c2 , -(b2 - a2) ]
+      [ (d1-c1).toFixed(4) , -(b1 - a1).toFixed(4)],
+      [ (d2-c2).toFixed(4) , -(b2 - a2).toFixed(4)]
     ];
 
     var b = [
-      a1-c1,
-      a2-c2
+      (a1-c1).toFixed(4) ,
+      (a2-c2).toFixed(4)
     ];
 
     var x = numeric.solve(A,b);  //Thank goodness for numeric.
@@ -313,7 +338,6 @@ function lineTriInt(triVerts, lineVerts){  //triVerts=[[a,b,c],[e,f,g],[h,i,j]] 
       }
     }
   }
-  //console.log("lineTriInt intersection_points.length", intersection_points.length)
   return intersection_points
 }
 /**
@@ -332,14 +356,12 @@ function pointInTriangleRegion(point, triVerts){
   var normal = [vec1[1] * vec2[2] - vec1[2] * vec2[1], vec1[2] * vec2[0] - vec1[0] * vec2[2],vec1[0] * vec2[1] - vec1[1] * vec2[0]];
   var normal_vec = new THREE.Vector3(normal[0], normal[1], normal[2]);
   normal_vec.normalize();
-  //console.log("normal_vec", normal_vec)
   //We want to check if the ray passes through the triangle face, origin point is our point
   var ray = new THREE.Ray(new THREE.Vector3(point[0],point[1],point[2]), normal_vec);
   var tri_v_1 = new THREE.Vector3(triVerts[0][0], triVerts[0][1], triVerts[0][2]),
       tri_v_2 = new THREE.Vector3(triVerts[1][0], triVerts[1][1], triVerts[1][2]),
       tri_v_3 = new THREE.Vector3(triVerts[2][0], triVerts[2][1], triVerts[2][2]);
   var new_vec = ray.intersectTriangle(tri_v_1, tri_v_2, tri_v_3, false, null);
-  //console.log("new_vec", new_vec)
   if(new_vec == null){
     return false;
   }
@@ -370,16 +392,12 @@ function removeRepeats(points){
     dictionaries_are_beautiful_things[points[i]]=0;
   }
   return Object.keys(dictionaries_are_beautiful_things);
-  /*var keys = [];
-  for(var k in dictionaries_are_beautiful_things){ keys.push(k); }
-  return keys;*/
 }
 /* *
 * Take point and array of line endpoints.
 * Returns true if point is on the line segment, else false.
 */
 function pointOnLine(point, line){
-  //console.log("pointOnLine: point=", point, "line=", line[0], line[1])
   var l_a1 = line[0][0],
       l_a2 = line[0][1],
       l_a3 = line[0][2],
@@ -390,21 +408,14 @@ function pointOnLine(point, line){
   var p_a1 = point[0],
       p_a2 = point[1],
       p_a3 = point[2];
-  //console.log("p_subs=", p_a1, p_a2, p_a3)
   var l_dir_vec = [l_b1 - l_a1, l_b2 - l_a2, l_b3 - l_a3];  //line as form (a1,a2,a3) + t*l_dir_vec
-  //console.log("l_dir_vec=", l_dir_vec)
   var a_min_p = [l_a1 - p_a1, l_a2 - p_a2, l_a3 - p_a3];
-  //console.log("a_min_p=",a_min_p)
   var cross_product = [a_min_p[1] * l_dir_vec[2] - a_min_p[2] * l_dir_vec[1],
                       a_min_p[2] * l_dir_vec[0] - a_min_p[0] * l_dir_vec[2],
                       a_min_p[0] * l_dir_vec[1] - a_min_p[1] * l_dir_vec[0]];  //perform cross product between a_min_p and l_dir_vec
-  //console.log("cross_product=", cross_product)
   var mag_l_dir_vec = Math.abs(Math.sqrt(Math.pow(l_dir_vec[0],2) + Math.pow(l_dir_vec[1],2) + Math.pow(l_dir_vec[2],2)));
   var mag_cross  = Math.abs(Math.sqrt(Math.pow(cross_product[0],2) + Math.pow(cross_product[1],2) + Math.pow(cross_product[2],2)));
   var p_distToLine = (mag_cross/mag_l_dir_vec).toFixed(4);
-  //console.log("p_distToLine", p_distToLine)
-  //console.log((pointToPointDist(point, line[0]) + pointToPointDist(line[1], point)).toFixed(3))
-  //console.log(pointToPointDist(line[0], line[1]).toFixed(3))
   //Point to infinite line distance is 0, now check point P within the line segment AB, ie AP + PB = AB
   if(p_distToLine == 0 && (pointToPointDist(point, line[0]) + pointToPointDist(line[1], point)).toFixed(4) == pointToPointDist(line[0], line[1]).toFixed(4)){
     return true
