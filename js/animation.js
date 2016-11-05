@@ -11,7 +11,20 @@ function performFold(){
 
       var possibleCollisions = uGrid.retrieveF(foldingLine.geometry.vertices);
       triRemesh(possibleCollisions, foldingLine.geometry);
-
+        
+      //reform grid after remeshing
+      uGrid.clear();
+      for( var i = 0; i< paperGeometry.faces.length; i++)
+      {
+          var triangle = [
+              paperGeometry.vertices[paperGeometry.faces[i].a],
+              paperGeometry.vertices[paperGeometry.faces[i].b],
+              paperGeometry.vertices[paperGeometry.faces[i].c]
+          ]
+          uGrid.add(triangle, paperGeometry.faces[i]);
+      }
+        
+      var objToRotate = uGrid.getObjToRotate(downPoint,foldingLine.geometry.vertices);
       //Object3D.rotateOnAxis( axis, angle );
 
       //performfold on all mesh, visualFoldLines, and boarderLines.
