@@ -103,9 +103,9 @@
         minY = Math.floor(minY);
         maxY = Math.ceil(maxY);
         
-        for(var i=minY-this.y; i<=maxY-this.y; i++)
+        for(var i=minY-this.y; i<=maxY-this.y; i+=this.cellHeight)
         {
-                for(var j=minX-this.x; j<=maxX-this.x; j++)
+                for(var j=minX-this.x; j<=maxX-this.x; j+=this.cellWidth)
                 {
                         //lastId = this.cell[i][j].objectList[this.cell[i][j].objectList.length-1].id;
                         this.cell[i][j].objectList.push({objectFaces: faces,
@@ -185,7 +185,7 @@
             return;
         
         //get all objects on mouse side of line
-        var points = this.supercover_line(vertices[0],vertices[1]);
+        var points = this.supercover_line(line[0],line[1]);
         var returnObjects = [];
         
         if(above)
@@ -197,12 +197,14 @@
                 var floorX = Math.floor(points[p].x-this.x);
                 var floorY = Math.floor(points[p].y-this.y);
                 
-                for(var h = floorY; h<this.height+this.y;h+=this.cellHeight)
+                for(var h = floorY; h<this.height;h+=this.cellHeight)
                     returnObjects = returnObjects.concat(this.getObjects(floorX,h));
             }
             
             //get all cells on mouse line and determine if they are on mouse side of the line
-            var possibleObjects = retrieveF(line);
+            var oldRetIds = this.returnIDs;
+            var possibleObjects = this.retrieveF(line);
+            this.returnIDs = oldRetIds;
             for(var o=0; o<possibleObjects.length; o++)
                 for(var v=0; v<possibleObjects[o].length; v++)
                 {
@@ -211,8 +213,9 @@
                     comparePoint = m*x+b;
                     
                     //object above line
-                    if(comparePoint<y)//work out ids
+                    if(comparePoint<y)
                     {
+                        //possibleObjects has already bean ID checked
                         returnObjects.push(possibleObjects[o]);
                         break;
                     }
@@ -280,14 +283,11 @@
         {
             for(var j=0; j<this.width; j++)
             {
-                this.cell[i][j] = {
-                    x: this.x+j,
-                    y: this.y+i,
-                    objectList:[{objectVertices:[], objectFaces:[], id:-1}]
-                };
+                this.cell[i][j].objectList=[]; 
             }
         }
-    }
+        this.id = 0;
+    };
 	//make Quadtree available in the global namespace
 	window.UniformGrid = UniformGrid;	
 
