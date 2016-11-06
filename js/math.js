@@ -117,35 +117,24 @@ function triRemesh(faces, line){
   paper.geometry = null;
 
   paperGeometry = new_paperGeometry;
-
-  //Remove the faces that have split up from new_paperGeometry, ie paperGeometry
-  //not sure if this is super necessary... probably not. Probably just slow.
-  // TOOOO SLOOOOW
-  /*for(var i = 0; i < faces.length; i++){
-    delete paperGeometry.faces.splice(findFace(faces[i]),1);
-  }*/
   paper.geometry = paperGeometry
 }
 
 /**
 * Ray Trace Line Triangle intersection
 * Uses ray tracing with to determine the first point of intersection (if any)
-* of a line with a triangle. Return Vector3 point of intersection else null.
+* of a line with a triangle. Returns array of Vector3 points of intersection else [].
 * @param triangle - Face object
 * @param line - Line geometry
+* NEED TO CLEAN UP MEMORY
 */
 function rayTraceLineTriIntersection(triangle, line){
+  //Weird stuff happens when a line point is near a corner. Not sure how to handle.
 
   //Pull out points from triangle as Vector3's
   var vertex_one = paperGeometry.vertices[triangle.a],
       vertex_two = paperGeometry.vertices[triangle.b],
       vertex_three = paperGeometry.vertices[triangle.c];
-
-  console.log("side1", vertex_one, vertex_two)
-  console.log("side2", vertex_two, vertex_three)
-  console.log("side3", vertex_three, vertex_one)
-  console.log("line", line.geometry.vertices[0],line.geometry.vertices[1])
-
   //Make LineSegments object with lines for each side
   var geometry1 = new THREE.Geometry();
   geometry1.vertices.push(vertex_one, vertex_two);
@@ -164,21 +153,24 @@ function rayTraceLineTriIntersection(triangle, line){
   dir_vec.normalize();
   //Create ray from line starting point line.vertices[0]
   var origin = line.geometry.vertices[0]
+  console.log("origin=",origin, "dir_vec=",dir_vec)
   var ray = new THREE.Raycaster(origin, dir_vec);
-
-  var intersections = ray.intersectObjects([line1, line2, line3]);
+  var intersections = ray.intersectObjects([line1, line2,line3]);
   console.log("intersections", intersections)
 
   //Getting float point problems again.
   var intersections_points = [];
+  var ray_length = origin.distanceTo(line.geometry.vertices[1])
   for(var i = 0; i < intersections.length; i++){
-    intersections_points.push(intersections[i].point);
+    //Pass on any points outside the bounds.
+    if(intersections[i].distance > ray_length && Math.abs(intersections[i].distance - ray_length) > .0001){
+      continue;
+    }
+    else{
+      intersections_points.push(intersections[i].point);
+    }
   }
 
-  /*console.log(intersections_points[0], intersections_points[1], intersections_points[2]);
-  intersections_points.sort(function comparator(a,b){return a.x - b.x;});
-  console.log(intersections_points[0], intersections_points[1], intersections_points[2]);
-  */
   //Need to remove repeating elements.
   for(var i = 0; i < intersections_points.length-1; i++){
     var curr = intersections_points[i];
@@ -193,20 +185,13 @@ function rayTraceLineTriIntersection(triangle, line){
 
   //If any two of the vertices in the list, then a triangle side was on line, so reject and return empty arr[]
   var count_vertices = 0;
-  for(var i = 0; i<intersections_points.length; i++){
-    if(f_VectorEquals(intersections_points[i],vertex_one)|| f_VectorEquals(intersections_points[i],vertex_two) || f_VectorEquals(intersections_points[i],vertex_three)){
+  for(var i = 0; i<intersections.length; i++){
+    if(f_VectorEquals(intersections[i].point,vertex_one)|| f_VectorEquals(intersections[i].point,vertex_two) || f_VectorEquals(intersections[i].point,vertex_three)){
       count_vertices++;
     }
   }
   if(count_vertices > 1){
     return [];
-  }
-  //Remove any vertices outside the bounds of the line.
-  var ray_length = origin.distanceTo(line.geometry.vertices[1])
-  for(var i = 0; i<intersections_points.length; i++){
-    if(origin.distanceTo(intersections_points[i]) > ray_length && Math.abs(origin.distanceTo(intersections_points[i]) - ray_length) > .0001){
-      delete intersections_points.splice(i,1);
-    }
   }
 
   return intersections_points;
