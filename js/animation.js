@@ -10,8 +10,8 @@ function performFold(){
 
 
       var possibleCollisions = uGrid.retrieveF(foldingLine.geometry.vertices);
-      triRemesh(possibleCollisions, foldingLine.geometry);
-        
+      triRemesh(possibleCollisions, foldingLine);
+
       //reform grid after remeshing
       uGrid.clear();
       for( var i = 0; i< paperGeometry.faces.length; i++)
@@ -23,7 +23,7 @@ function performFold(){
           ]
           uGrid.add(triangle, paperGeometry.faces[i]);
       }
-        
+
       var objToRotate = uGrid.getObjToRotate(downPoint,foldingLine.geometry.vertices);
       //Object3D.rotateOnAxis( axis, angle );
 
