@@ -5,12 +5,9 @@
 * rayTraceLineTriIntersection(triangle, line)
 * f_VectorEquals(point1, point2)
 * triRemesh_helper(triVerts, lineVerts)
-* lineTriInt(triVerts, lineVerts)
 * pointInTriangleRegion(point, triVerts)
 * findFace(face)
 * removeRepeats(points) <-- Warning, only use this to check equality/repetition. The data type it returns is weird and not compabtible with arrays[].
-* pointOnLine(point, line)
-* pointToPointDist(point1, point2)
 * normalizeLine(line) <-- TO DO
 * findSpanningLine(line, triSides) <-- TO DO
 */
@@ -19,7 +16,7 @@
 * 1) We will  need to find where the fold line intersects
 *    the boarder and visual fold lines and re-mesh those lines but I think we should 1st focus
 *    on the paper and then add the lines later.
-* 2) Make funcs more robust, ie don't assume coplanarity. And others?
+* 2) Eventually change how triRemesh_helper handles one point of interesection
 * 3) Figure out triRemesh weird bug.
 */
 
@@ -30,82 +27,43 @@
 * Takes an array of triangle faces and a line object.
 * Removes faces from paperGeometry which collide with the line, and inserts new faces of the resultant remesh.
 */
-function triRemesh(faces, line){
+function triRemesh(line){
   //Should probably check valid and non-empty input being given
   var new_paperGeometry = new THREE.Geometry();
+  var colliding_faces = [];
   //Need to add all other non-colliding faces from old paperGeometry
+  //First add vertices, we will merge at the end of triRemesh.
   for(var i = 0; i < paperGeometry.vertices.length; i++){
     new_paperGeometry.vertices.push(
       new THREE.Vector3(paperGeometry.vertices[i].x,paperGeometry.vertices[i].y,paperGeometry.vertices[i].z)
     );
   }
+  //Now add to new_paperGeometry if no collision
+  //Else add to colliding_faces
   for(var i = 0; i < paperGeometry.faces.length; i++){
-    //Only add non colliding faces, so need to check as each face for collision, and if yes, don't push to new geometry
-    //But we can add to a colliding_faces arr!
-    new_paperGeometry.faces.push(
-      new THREE.Face3(paperGeometry.faces[i].a, paperGeometry.faces[i].b, paperGeometry.faces[i].c)
-    );
+    if(rayTraceLineTriIntersection(paperGeometry.faces[i], line).length == 0){
+      new_paperGeometry.faces.push(
+        new THREE.Face3(paperGeometry.faces[i].a, paperGeometry.faces[i].b, paperGeometry.faces[i].c)
+      );
+    }
+    else{
+      colliding_faces.push(paperGeometry.faces[i]);
+    }
   }
 
-  var line_vertices = [[line.vertices[0].x, line.vertices[0].y, line.vertices[0].z], [line.vertices[1].x, line.vertices[1].y, line.vertices[1].z]];
-  //Build array of faces vertices -> [[face1v1, face1v2, face1v3], [face2v1, face2v2, face2v3], ...].
-  var faces_vertices = [];
-  for(var i = 0; i < faces.length; i++){
-    var fvertices = [
-
-      /*[paperGeometry.vertices[faces[i].a].x, paperGeometry.vertices[faces[i].a].y, paperGeometry.vertices[faces[i].a].z],
-      [paperGeometry.vertices[faces[i].b].x, paperGeometry.vertices[faces[i].b].y, paperGeometry.vertices[faces[i].b].z],
-      [paperGeometry.vertices[faces[i].c].x, paperGeometry.vertices[faces[i].c].y, paperGeometry.vertices[faces[i].c].z]
-      */
-      [paperGeometry.vertices[faces[i].a].x, paperGeometry.vertices[faces[i].a].y, 0.1],
-      [paperGeometry.vertices[faces[i].b].x, paperGeometry.vertices[faces[i].b].y, 0.1],
-      [paperGeometry.vertices[faces[i].c].x, paperGeometry.vertices[faces[i].c].y, 0.1]
-    ];
-    faces_vertices.push(fvertices);
-  }
-
-  for(var i = 0; i < faces_vertices.length; i++){
-    //First check if face and line intersects
-    var line_intersection_points = lineTriInt(faces_vertices[i], line_vertices);
-    if(line_intersection_points.length > 0){
-      //Needs special handling if only one point of intersection returned
-      if(line_intersection_points.length == 1){
-        //case 1: Line has an endpoint inside triangle and line doesn't start on the triangle.
-        if(removeRepeats(line_vertices.concat([line_intersection_points[0]])).length == 3){
-          if(pointInTriangleRegion(line_vertices[0], faces_vertices[i]) == true){
-            line_intersection_points.push(line_vertices[0]);
-          }
-          else if(pointInTriangleRegion(line_vertices[1], faces_vertices[i]) == true){
-            line_intersection_points.push(line_vertices[1]);
-          }
-        }
-        //case 2: Line terminates/starts on the triangle side, but does not continue within. In this case, do not remesh.
-        else{
-          //Line could be starting on triangle and terminating inside.
-          if(removeRepeats([line_intersection_points[0], line_vertices[0]]).length == 1 && pointInTriangleRegion(line_vertices[1], faces_vertices[i]) == true){
-            line_intersection_points.push(line_vertices[1]);
-          }
-          else if(removeRepeats([line_intersection_points[0], line_vertices[1]]).length == 1 && pointInTriangleRegion(line_vertices[0], faces_vertices[i]) == true){
-            line_intersection_points.push(line_vertices[0]);
-          }
-          else{
-            continue;
-          }
-        }
-
-      }
-      var new_triangles = triRemesh_helper(faces_vertices[i], line_intersection_points); //[[[a,b,c], [e,f,g], [x,y,z]], ...]
-      for(var k = 0; k < new_triangles.length; k++){ //Each triangle
-        //Add all the points to the end new_paperGeometry.vertices
-        new_paperGeometry.vertices.push(
-          new THREE.Vector3(new_triangles[k][0][0],new_triangles[k][0][1],new_triangles[k][0][2]),
-          new THREE.Vector3(new_triangles[k][1][0],new_triangles[k][1][1],new_triangles[k][1][2]),
-          new THREE.Vector3(new_triangles[k][2][0],new_triangles[k][2][1],new_triangles[k][2][2])
-        );
-        //Create and add face from the last three points pushed
-        var new_face = new THREE.Face3(new_paperGeometry.vertices.length-3, new_paperGeometry.vertices.length-2, new_paperGeometry.vertices.length-1);
-        new_paperGeometry.faces.push(new_face);
-      }
+  for(var i = 0; i < colliding_faces.length; i++){
+    var new_triangles = triRemesh_helper(colliding_faces[i], line);
+    for(var k = 0; k < new_triangles.length; k++){ //Each triangle
+      //Add all the points to the end new_paperGeometry.vertices
+      new_paperGeometry.vertices.push(
+        new THREE.Vector3(new_triangles[k][0].x, new_triangles[k][0].y, new_triangles[k][0].z),
+        new THREE.Vector3(new_triangles[k][1].x, new_triangles[k][1].y, new_triangles[k][1].z),
+        new THREE.Vector3(new_triangles[k][2].x, new_triangles[k][2].y, new_triangles[k][2].z)
+      );
+      //Create and add face from the last three points pushed
+      console.log("FACE PUSHED")
+      var new_face = new THREE.Face3(new_paperGeometry.vertices.length-3, new_paperGeometry.vertices.length-2, new_paperGeometry.vertices.length-1);
+      new_paperGeometry.faces.push(new_face);
     }
   }
   //mergeVertices to update vertices array
@@ -118,17 +76,20 @@ function triRemesh(faces, line){
 
   paperGeometry = new_paperGeometry;
   paper.geometry = paperGeometry
+  console.log(paper.geometry.faces.length)
 }
 
 /**
 * Ray Trace Line Triangle intersection
 * Uses ray tracing with to determine the first point of intersection (if any)
 * of a line with a triangle. Returns array of Vector3 points of intersection else [].
-* @param triangle - Face object
-* @param line - Line geometry
+* Returns [] when line has terminating point on triangle or when a triangle side lies on the line.
+* @param triangle - Face
+* @param line - Line
 * NEED TO CLEAN UP MEMORY
 */
 function rayTraceLineTriIntersection(triangle, line){
+  //console.log(line)
   //Weird stuff happens when a line point is near a corner. Not sure how to handle.
 
   //Pull out points from triangle as Vector3's
@@ -153,10 +114,10 @@ function rayTraceLineTriIntersection(triangle, line){
   dir_vec.normalize();
   //Create ray from line starting point line.vertices[0]
   var origin = line.geometry.vertices[0]
-  console.log("origin=",origin, "dir_vec=",dir_vec)
+  //console.log("origin=",origin, "dir_vec=",dir_vec)
   var ray = new THREE.Raycaster(origin, dir_vec);
   var intersections = ray.intersectObjects([line1, line2,line3]);
-  console.log("intersections", intersections)
+  //console.log("intersections", intersections)
 
   //Getting float point problems again.
   var intersections_points = [];
@@ -182,18 +143,25 @@ function rayTraceLineTriIntersection(triangle, line){
       }
     }
   }
-
   //If any two of the vertices in the list, then a triangle side was on line, so reject and return empty arr[]
   var count_vertices = 0;
-  for(var i = 0; i<intersections.length; i++){
-    if(f_VectorEquals(intersections[i].point,vertex_one)|| f_VectorEquals(intersections[i].point,vertex_two) || f_VectorEquals(intersections[i].point,vertex_three)){
+  for(var i = 0; i<intersections_points.length; i++){
+    if(f_VectorEquals(intersections_points[i],vertex_one)|| f_VectorEquals(intersections_points[i],vertex_two) || f_VectorEquals(intersections_points[i],vertex_three)){
       count_vertices++;
     }
   }
   if(count_vertices > 1){
     return [];
   }
-
+  //If only 1 intersection and the other line point not inside the triangle, then return []
+  if(intersections_points.length == 1){
+    if(f_VectorEquals(intersections_points[0],origin) && pointInTriangleRegion(line.geometry.vertices[1], triangle) == false){
+      return [];
+    }
+    if(f_VectorEquals(intersections_points[0],line.geometry.vertices[1]) && pointInTriangleRegion(origin, triangle) == false){
+      return [];
+    }
+  }
   return intersections_points;
 }
 
@@ -213,202 +181,192 @@ function f_VectorEquals(point1, point2){
   }
   return false;
 }
-//Because let's not rewrite everything. Not pretty, probably not efficient, can rewrite later.
 /**
 * Triangle Remesh Helper
-* Takes an array of triangle vertices in array form, and an array of line vertices in array form.
-* Returns an array of arrays of triangle vertices, resulting from remeshing calculation,
-* to be added to the geometry as face objects.
+* Returns an array of arrays of triangle vertices (Vector3), resulting from remeshing calculation.
+* @param triangle - Face
+* @param line - Line
 */
-function triRemesh_helper(triVerts, lineVerts){ //triVerts=[[a,b,c],[e,f,g],[h,i,j]] lineVerts = [[k,l,m],[n,o,p]]
-
-  var triside1 = [triVerts[0], triVerts[1]];
-  var triside2 = [triVerts[1], triVerts[2]];
-  var triside3 = [triVerts[2], triVerts[0]];
-
-  var trisides = [triside1, triside2, triside3]; //[[[a,b,c],[e,f,g]],[[e,f,g],[h,i,j]],[[h,i,j],[a,b,c]]]
-  var point_arr = removeRepeats(lineVerts.concat(triVerts));
-
-  //Case 1: 1 point of intersection (4 unique vertices)
-  if(point_arr.length == 4){
-    var vertex = lineVerts[0];
-    var other = lineVerts[1];
-    if(removeRepeats(triVerts.concat([lineVerts[1]])).length == 3){
-      vertex = lineVerts[1];
-      other = lineVerts[0];
-    }
-    var no_l_verts = [];
-    //Determine which of the line points is also a triangle vertex point, and which triangle points aren't
-    for(var i = 0; i < 3; i++){
-      if(removeRepeats([triVerts[i],vertex]).length == 2){
-        no_l_verts.push(triVerts[i]);
+function triRemesh_helper(triangle, line){
+  var intersection_points = rayTraceLineTriIntersection(triangle, line);
+  var vertex_one = paperGeometry.vertices[triangle.a],
+      vertex_two = paperGeometry.vertices[triangle.b],
+      vertex_three = paperGeometry.vertices[triangle.c];
+  //Case 1: One point of intersection. (One of line's endpoints is inside the triangle)
+  if(intersection_points.length == 1){
+    var inner_point = [];
+    //Case 1.1.1: Line starts outside of the triangle, so intersection point is neither endpoint
+    if(f_VectorEquals(intersection_points[0],line.geometry.vertices[0]) == false && f_VectorEquals(intersection_points[0],line.geometry.vertices[1]) == false){
+      //Figure out which endpoint is inside
+      if(pointInTriangleRegion(line.geometry.vertices[0], triangle)){
+        inner_point.push(line.geometry.vertices[0]);
+      }
+      else{
+        inner_point.push(line.geometry.vertices[1]);
       }
     }
-    //1.0: Vertex to side
-    for(var i = 0; i < 3 ; i++){
-      if(pointOnLine(other,trisides[i]) == true){ //Line goes through both a vertex and a side
-        var ret_tri1 = [vertex, other, no_l_verts[0]],
-            ret_tri2 = [vertex, other, no_l_verts[1]];
-        return [ret_tri1, ret_tri2];
-      }
-    }
-
-    //1.1: Vertex to inside of triangle - Right now just returns 3 triangles, all sharing the inner point as a vertex.
-    /******* TO CHANGE ********/
-    var ret_tri1 = [other, triVerts[0], triVerts[1]],
-        ret_tri2 = [other, triVerts[1], triVerts[2]],
-        ret_tri3 = [other, triVerts[2], triVerts[0]];
-    return [ret_tri1, ret_tri2, ret_tri3];
-
-  }
-  //Case 2: 5 unique vertices
-  else{
-    var points_on_line = []; //Helps us figure out if one or both of our line points lie on the triangle sides.
-    var triside_to_one = []; //Will help us figure out which "side" of the line contains 1 tri-vertex vs. two
-    for(var i = 0; i < 2; i++){
-      for(var k = 0; k < 3; k++){
-        if(pointOnLine(lineVerts[i], trisides[k]) == true){
-          points_on_line.push(lineVerts[i]);
-          triside_to_one.push(trisides[k]);
-          break;
-        }
-      }
-    }
-    //2.0: Side to side
-    if(points_on_line.length == 2){
-      //Find the vertex on the 1 vertex side of the line.
-      //triside_to_one = [[[a,b,c],[e,f,g]] , [[h,i,j], [a,b,c]] ]
-      triside_to_one = triside_to_one[0].concat(triside_to_one[1]);
-      triside_to_one = triside_to_one.sort();
-      var vertex_one;
-      var vertex_two = [];
-      if(removeRepeats([triside_to_one[0], triside_to_one[1]]).length == 1){
-        vertex_one = triside_to_one[0];
-        vertex_two.push(triside_to_one[2]);
-        vertex_two.push(triside_to_one[3]);
-      }
-      else if(removeRepeats([triside_to_one[1], triside_to_one[2]]).length == 1){
-        vertex_one = triside_to_one[2];
-        vertex_two.push(triside_to_one[0]);
-        vertex_two.push(triside_to_one[3]);
-      }
-      else if(removeRepeats([triside_to_one[2], triside_to_one[3]]).length == 1){
-        vertex_one = triside_to_one[2];
-        vertex_two.push(triside_to_one[0]);
-        vertex_two.push(triside_to_one[1]);
-      }
-
-      var ret_tri1 = [vertex_one, points_on_line[0], points_on_line[1]],
-          ret_tri2 = [vertex_two[0], points_on_line[0], points_on_line[1]],
-          ret_tri3 = [vertex_two[0], vertex_two[1], points_on_line[0]];
-      //Need to dermine which of the line points is closest to vertex_two[1]
-      if(pointToPointDist(vertex_two[1], points_on_line[1]) < pointToPointDist(vertex_two[1], points_on_line[0])){
-        ret_tri3 = [vertex_two[0], vertex_two[1], points_on_line[1]];
-      }
-      return[ret_tri1, ret_tri2, ret_tri3];
-    }
-    //2.1: Side to inside triangle -  Currently partitions into 4 triangles
-    /******** TO CHANGE ********/
     else{
-      var inner_vertex = lineVerts[0];
-      if(removeRepeats([inner_vertex, points_on_line[0]]).length == 1){
-        inner_vertex = lineVerts[1];
+      if(f_VectorEquals(intersection_points[0],line.geometry.vertices[0]) == false && pointInTriangleRegion(line.geometry.vertices[0], triangle)){
+        inner_point.push(line.geometry.vertices[0]);
       }
-      var ret_tri1 = [inner_vertex, points_on_line[0], triVerts[0]],
-          ret_tri2 = [inner_vertex, triVerts[0], triVerts[1]],
-          ret_tri3 = [inner_vertex, triVerts[1], triVerts[2]],
-          ret_tri4 = [inner_vertex, triVerts[2], points_on_line[0]];
+      else{
+        inner_point.push(line.geometry.vertices[1]);
+      }
+    }
+    var shared_vertex = false;
+    if(f_VectorEquals(vertex_one, intersection_points[0])){
+      shared_vertex = true;
+    }
+    if(f_VectorEquals(vertex_two, intersection_points[0])){
+      shared_vertex = true;
+    }
+    if(f_VectorEquals(vertex_three, intersection_points[0])){
+      shared_vertex = true;
+    }
+    //Case 1.2.1: Intersection point is a triangle vertex.
+    if(shared_vertex == true){
+      var ret_tri1 = [vertex_one, inner_point, vertex_two],
+          ret_tri2 = [vertex_two, inner_point, vertex_three],
+          ret_tri3 = [vertex_three, inner_point, vertex_one];
+      return [ret_tri1, ret_tri2, ret_tri3];
+    }
+    //Case 1.2.2: Intersection point is on a triangle side.
+    else{
+      //Need to figure out which side contains the intersection point. (v1 v2 will be the side with the intersection)
+      var v1, v2, v3;
+      if(vertex_one.distanceTo(intersection_points[0]) + intersection_points[0].distanceTo(vertex_two) == vertex_one.distanceTo(vertex_two)){
+        v1 = vertex_one;
+        v2 = vertex_two;
+        v3 = vertex_three;
+      }
+      if(vertex_two.distanceTo(intersection_points[0]) + intersection_points[0].distanceTo(vertex_three) == vertex_two.distanceTo(vertex_three)){
+        v1 = vertex_two;
+        v2 = vertex_three;
+        v3 = vertex_one;
+      }
+      if(vertex_three.distanceTo(intersection_points[0]) + intersection_points[0].distanceTo(vertex_one) == vertex_three.distanceTo(vertex_one)){
+        v1 = vertex_three;
+        v2 = vertex_one;
+        v3 = vertex_two;
+      }
 
+      var ret_tri1 = [v1, inner_point, intersection_points[0]],
+          ret_tri2 = [intersection_points[0], inner_point, v2],
+          ret_tri3 = [v2, inner_point, v3],
+          ret_tri4 = [v3, inner_point, v1];
       return [ret_tri1, ret_tri2, ret_tri3, ret_tri4];
     }
   }
-}
-/**
-* Line-Triangle intersection
-* Takes an array of triangle vertices and an array of line vertices.
-* Calculates if the line intersects any side or sides of the triangle.
-* Returns an array of intersection points if an intersection exists.
-* If not, returns empty array.
-* Note: Assumes that line and triangle are coplanar.
-*/
-function lineTriInt(triVerts, lineVerts){  //triVerts=[[a,b,c],[e,f,g],[h,i,j]] lineVerts = [[k,l,m],[n,o,p]]
-  var triside1 = [triVerts[0], triVerts[1]];
-  var triside2 = [triVerts[1], triVerts[2]];
-  var triside3 = [triVerts[2], triVerts[0]];
 
-  var trisides = [triside1, triside2, triside3]; //[[[a,b,c],[e,f,g]],[[e,f,g],[h,i,j]],[[h,i,j],[a,b,c]]]
-  var a1 = lineVerts[0][0],  //Line is AB
-      a2 = lineVerts[0][1],
-      a3 = lineVerts[0][2];
-  var b1 = lineVerts[1][0],
-      b2 = lineVerts[1][1],
-      b3 = lineVerts[1][2];
+  //Case 2: Two points of intersection.
+  else{
+    var shared_vertex = null,
+        v1 = null,
+        v2 = null;
 
-  var intersection_points = [];
-
-  for(var i = 0; i < 3; i++){
-    var c1 = trisides[i][0][0],  //Triangle side is CD
-        c2 = trisides[i][0][1],
-        c3 = trisides[i][0][2];
-    var d1 = trisides[i][1][0],
-        d2 = trisides[i][1][1],
-        d3 = trisides[i][1][2];
-
-    var A = [
-      [ (d1-c1).toFixed(4) , -(b1 - a1).toFixed(4)],
-      [ (d2-c2).toFixed(4) , -(b2 - a2).toFixed(4)]
-    ];
-
-    var b = [
-      (a1-c1).toFixed(4) ,
-      (a2-c2).toFixed(4)
-    ];
-
-    var x = numeric.solve(A,b);  //Thank goodness for numeric.
-    var s = x[0],
-        t = x[1];
-
-    if( (d3 - c3)*s - (b3 - a3)*t === a3-c3){
-      var p_x = a1 + (b1-a1)*t,
-          p_y = a2 + (b2-a2)*t,
-          p_z = a3 + (b3-a3)*t;
-      var point = [p_x, p_y, p_z];
-      //Check that point is not already in intersection_points
-      var in_flag = false;
-      for(var k = 0; k<intersection_points.length;k++){
-        if(intersection_points[k][0] == point[0] && intersection_points[k][1] == point[1] && intersection_points[k][2] == point[2]){
-          in_flag = true;
-        }
+    for(var i = 0; i < intersection_points.length; i++){
+      if(f_VectorEquals(vertex_one, intersection_points[i])){
+        shared_vertex = vertex_one;
+        v1 = vertex_two;
+        v2 = vertex_three;
       }
-      if(in_flag == false && pointOnLine(point, lineVerts) == true){
-        intersection_points.push(point);
+      if(f_VectorEquals(vertex_two, intersection_points[i])){
+        shared_vertex = vertex_two;
+        v1 = vertex_one;
+        v2 = vertex_three;
+      }
+      if(f_VectorEquals(vertex_three, intersection_points[i])){
+        shared_vertex = vertex_three;
+        v1 = vertex_one;
+        v2 = vertex_two;
       }
     }
+    //Case 2.1: Vertex to side.
+    if(shared_vertex != null){
+      var side_point = intersection_points[0]; //Figure out which intersection point *isn't* a vertex.
+      if(f_VectorEquals(shared_vertex, side_point)){
+        side_point = intersection_points[1];
+      }
+      var ret_tri1 = [shared_vertex, v1, side_point],
+          ret_tri2 = [shared_vertex, v1, side_point];
+      return [ret_tri1, ret_tri2];
+    }
+    //Case 2.2: Side to side.
+    else{
+      //Figure out which triangle vertex is by its lonesome on its side of the line.
+      var intersected_sides = []
+      for(var i = 0; i < intersection_points.length; i++){
+        if(vertex_one.distanceTo(intersection_points[i]) + intersection_points[i].distanceTo(vertex_two) == vertex_one.distanceTo(vertex_two)){
+          intersected_sides.push(vertex_one,vertex_two);
+        }
+        if(vertex_two.distanceTo(intersection_points[i]) + intersection_points[i].distanceTo(vertex_three) == vertex_two.distanceTo(vertex_three)){
+          intersected_sides.push(vertex_two, vertex_three);
+        }
+        if(vertex_three.distanceTo(intersection_points[i]) + intersection_points[i].distanceTo(vertex_one) == vertex_three.distanceTo(vertex_one)){
+          intersected_sides.push(vertex_three, vertex_one);
+        }
+      }
+      var shared_vertex;
+      for(var i = 0; i<intersected_sides.length-1; i++){
+        for(var k = i+1; k<intersected_sides.length; k++){
+          if(intersected_sides[i] == intersected_sides[k]){
+            shared_vertex = intersected_sides[i];
+            break;
+          }
+        }
+      }
+      //Now figure out which are the non-shared vertices
+      var v1, v2;
+      if(vertex_one == shared_vertex){
+        v1 = vertex_two;
+        v2 = vertex_three;
+      }
+      if(vertex_two == shared_vertex){
+        v1 = vertex_one;
+        v2 = vertex_three;
+      }
+      if(vertex_three == shared_vertex){
+        v1 = vertex_one;
+        v2 = vertex_two;
+      }
+
+      var closeTo_v1 = intersection_points[0],
+          farTo_v1 = intersection_points[1];
+      if(closeTo_v1.distanceTo(v1) > farTo_v1.distanceTo(v1)){
+        closeTo_v1 = intersection_points[1];
+        farTo_v1 = intersection_points[0];
+      }
+      var ret_tri1 = [shared_vertex, closeTo_v1, farTo_v1],
+          ret_tri2 = [closeTo_v1, v1, v2],
+          ret_tri3 = [closeTo_v1, farTo_v1, v2];
+      return [ret_tri1, ret_tri2, ret_tri3];
+    }
   }
-  return intersection_points
 }
+
 /**
 * Point in Triangle Region
 * Takes a point and an array of vertices of a triangle.
 * Returns true if the point lies within the same plane and region of the trangle's interior
 * Return false otherwise
+* @param point - Vector3
+* @param triangle - Face
 * Note: This function also returns true if the point is on any of the triangle edges.
 *       Also assumes point and triangle are coplanar.
 */
 /******* NEED TO CLEAN UP MEMORY **********/
-function pointInTriangleRegion(point, triVerts){
-  var vec1 = numeric.sub(triVerts[1],triVerts[0]);
-  var vec2 = numeric.sub(triVerts[2],triVerts[1]);
-  //Get normal of plane defined by triVerts
-  var normal = [vec1[1] * vec2[2] - vec1[2] * vec2[1], vec1[2] * vec2[0] - vec1[0] * vec2[2],vec1[0] * vec2[1] - vec1[1] * vec2[0]];
-  var normal_vec = new THREE.Vector3(normal[0], normal[1], normal[2]);
-  normal_vec.normalize();
-  //We want to check if the ray passes through the triangle face, origin point is our point
-  var ray = new THREE.Ray(new THREE.Vector3(point[0],point[1],point[2]), normal_vec);
-  var tri_v_1 = new THREE.Vector3(triVerts[0][0], triVerts[0][1], triVerts[0][2]),
-      tri_v_2 = new THREE.Vector3(triVerts[1][0], triVerts[1][1], triVerts[1][2]),
-      tri_v_3 = new THREE.Vector3(triVerts[2][0], triVerts[2][1], triVerts[2][2]);
-  var new_vec = ray.intersectTriangle(tri_v_1, tri_v_2, tri_v_3, false, null);
+function pointInTriangleRegion(point, triangle){
+  //Define plane of triangle to get its normal.
+  var vertex_one = paperGeometry.vertices[triangle.a],
+      vertex_two = paperGeometry.vertices[triangle.b],
+      vertex_three = paperGeometry.vertices[triangle.c];
+  var tri_plane = new THREE.Plane();
+  tri_plane.setFromCoplanarPoints(vertex_one, vertex_two,vertex_three);
+  var dir_vec = tri_plane.normal.normalize();
+  //console.log(normal)
+  var ray = new THREE.Ray(point,dir_vec);
+  var new_vec = ray.intersectTriangle(vertex_one, vertex_two,vertex_three, false, null);
+
   if(new_vec == null){
     return false;
   }
@@ -469,20 +427,6 @@ function pointOnLine(point, line){
   }
   return false;
 
-}
-/**
-* Takes two points and calculates the distance
-* between them. Returns distance
-*/
-function pointToPointDist(point1, point2){
-  var x1 = point1[0],
-      y1 = point1[1],
-      z1 = point1[2];
-  var x2 = point2[0],
-      y2 = point2[1],
-      z2 = point2[2];
-  var dist = Math.abs(Math.sqrt(Math.pow((x2-x1),2) + Math.pow((y2-y1),2) + Math.pow((z2-z1),2)));
-  return dist;
 }
 
 /**
