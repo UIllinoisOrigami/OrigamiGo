@@ -124,6 +124,12 @@ function init() {
 	borders.name = "borders";
 	scene.add(borders);
 
+  //GRIDLINES
+    var gridLines = uGrid.getGridLines();
+    for(var i = 0; i<gridLines.length; i++)
+    {
+        scene.add(gridLines[i]);
+    }
   //ORBITCONTROLS
   controls = new THREE.OrbitControls(camera, renderer.domElement);
   window.addEventListener( 'mousedown', onMouseDown, false );

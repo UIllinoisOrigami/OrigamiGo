@@ -28,10 +28,10 @@
         this.id = 0;
         this.returnIds=[];
         
-        for(var i=0; i<this.height; i++)
+        for(var i=0; i<this.height; i+=this.cellHeight)
         {
             this.cell[i]=[];
-            for(var j=0; j<this.width; j++)
+            for(var j=0; j<this.width; j+=this.cellWidth)
             {
                 this.cell[i][j] = {
                     x: this.x+j,
@@ -41,7 +41,35 @@
             }
         }
 	};
-	
+    UniformGrid.prototype.getGridLines = function() {
+        var retLines=[];
+        for(var i=this.x; i<=this.x+this.width; i+=this.cellWidth)
+        {
+            var geometry = new THREE.Geometry();
+            geometry.vertices.push(new THREE.Vector3(i,this.y,0.1));
+            geometry.vertices.push(new THREE.Vector3(i,this.y+this.height,0.1));
+            var material = new THREE.LineBasicMaterial({color: 0xc05c5c});
+            var line = new THREE.Line(geometry, material);
+            line.name = "gridLine";
+            line.visable = false;
+
+            retLines.push(line);
+        }
+        
+        for(var i=this.y; i<=this.y+this.height; i+=this.cellHeight)
+        {
+            var geometry = new THREE.Geometry();
+            geometry.vertices.push(new THREE.Vector3(this.x,i,0.1));
+            geometry.vertices.push(new THREE.Vector3(this.x+this.width,i,0.1));
+            var material = new THREE.LineBasicMaterial({color: 0xc05c5c});
+            var line = new THREE.Line(geometry, material);
+            line.name = "gridLine";
+            line.visable = false;
+
+            retLines.push(line);
+        }
+        return retLines;
+	};
 	
 	/*
 	 * old way to add to grid, travers through the grid, don not use.

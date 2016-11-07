@@ -35,6 +35,18 @@ function checkDrawStyle(){
         child.visible=false;
     });
   }
+  if (document.getElementById('gridLines').checked) {
+     scene.traverse( function(child){
+      if(child instanceof THREE.Line && child.name=="gridLine")
+        child.visible=true;
+    });
+  }
+  else if (!document.getElementById('gridLines').checked) {
+     scene.traverse( function(child){
+      if(child instanceof THREE.Line && child.name=="gridLine")
+        child.visible=false;
+    });
+  }
 }
 
 //this function is to make a lot of geometry for testing. it will not be used in the real application. it is hear because this file has a lot of space.
