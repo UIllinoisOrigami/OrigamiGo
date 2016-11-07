@@ -24,7 +24,7 @@ function performFold(){
           uGrid.add(triangle, paperGeometry.faces[i]);
       }
 
-      var objToRotate = uGrid.getObjToRotate(downPoint,foldingLine.geometry.vertices);
+      var objToRotate = uGrid.getObjToRotate(downPoint,foldingLine.geometry.vertices,paperGeometry.vertices);
       //Object3D.rotateOnAxis( axis, angle );
 
       //performfold on all mesh, visualFoldLines, and boarderLines.

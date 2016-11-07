@@ -195,7 +195,7 @@
         return returnObjects;
     };
       //get objects to rotate
-    UniformGrid.prototype.getObjToRotate =function(mouse, line) {
+    UniformGrid.prototype.getObjToRotate =function(mouse, line, vertices) {
         var m = (line[0].y-line[1].y)/(line[0].x-line[1].x);
         var b = line[0].y-m*line[0].x;
         var comparePoint = m*mouse.x+b;
@@ -222,11 +222,16 @@
             for(var p=0; p<points.length; p++)
             {
                 points[p].y += this.cellHeight; 
-                var floorX = Math.floor(points[p].x-this.x);
-                var floorY = Math.floor(points[p].y-this.y);
                 
-                for(var h = floorY; h<this.height;h+=this.cellHeight)
-                    returnObjects = returnObjects.concat(this.getObjects(floorX,h));
+                //only include cell if it is truely on mouse side of the line.
+                if(p+1==points.length || (points[p].x!=points[p+1].x && points[p].y!=points[p+1].y))
+                {
+                    var floorX = Math.floor(points[p].x-this.x);
+                    var floorY = Math.floor(points[p].y-this.y);
+
+                    for(var h = floorY; h<this.height;h+=this.cellHeight)
+                        returnObjects = returnObjects.concat(this.getObjects(floorX,h));
+                }
             }
             
             //get all cells on mouse line and determine if they are on mouse side of the line
@@ -234,32 +239,59 @@
             var possibleObjects = this.retrieveF(line);
             this.returnIDs = oldRetIds;
             for(var o=0; o<possibleObjects.length; o++)
-                for(var v=0; v<possibleObjects[o].length; v++)
+            {
+                var x1 = vertices[possibleObjects[o].a].x;
+                var y1 = vertices[possibleObjects[o].a].y;
+
+                var x2 = vertices[possibleObjects[o].b].x;
+                var y2 = vertices[possibleObjects[o].b].y;
+
+                var x3,y3;
+                if(possibleObjects[o].c !='undefined')
                 {
-                    var x = geometry[possibleObjects[o][v]].x;
-                    var y = geometry[possibleObjects[o][v]].y;
-                    comparePoint = m*x+b;
-                    
-                    //object above line
-                    if(comparePoint<y)
+                    x3 = vertices[possibleObjects[o].c].x;
+                    y3 = vertices[possibleObjects[o].c].y;
+                }
+
+                //object above line
+                var diff;
+                comparePoint = m*x1+b;
+                diff = Math.abs(comparePoint - y1);
+                if(comparePoint<y1 && diff>0.0000001)
+                {
+                    //possibleObjects has already bean ID checked
+                    returnObjects.push(possibleObjects[o]);
+                    continue;
+                }
+
+                comparePoint = m*x2+b;
+                diff = Math.abs(comparePoint - y2);
+                if(comparePoint<y2 && diff>0.0000001)
+                {
+                    //possibleObjects has already bean ID checked
+                    returnObjects.push(possibleObjects[o]);
+                    continue;
+                }
+
+                if(possibleObjects[o].c !='undefined')
+                {
+                    comparePoint = m*x3+b;
+                    diff = Math.abs(comparePoint - y3);
+                    if(comparePoint<y3 && diff>0.0000001)
                     {
                         //possibleObjects has already bean ID checked
                         returnObjects.push(possibleObjects[o]);
-                        break;
+                        continue;
                     }
-                    //object below line
-                    //else if(comparePoint>y)
-                        
-                    //object on line
-                    //else       
                 }
-                    
+                //object below line
+                //else if(comparePoint>y)
 
-      
+                //object on line
+                //else       
+            }    
         }
-            
- 
-        //get all cells on the line and compare there objects to see if they are on the mouse side of the line
+        return returnObjects;
     }  
         
     UniformGrid.prototype.getObjects =function(x, y) {
