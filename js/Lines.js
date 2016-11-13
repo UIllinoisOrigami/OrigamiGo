@@ -7,6 +7,7 @@ function onMouseUp(event)
 
       var geometry = new THREE.Geometry();
       var upPoint = get3dPointZAxis(event);
+
       /*var xScale = upPoint.x-downPoint.x;
       var yScale = upPoint.y-downPoint.y;
 
@@ -32,6 +33,9 @@ function onMouseUp(event)
         upPoint.z = -0.1;
         downPoint.z = -0.1;
       }
+      //Make life easier by setting reasonable points
+      reasonablePoints(upPoint);
+      reasonablePoints(downPoint);
 
       //the special line that is actually a triangle strip lets use set the width so we can see it... it also is not fun to work with. this is how we get the vertices out of the geometry.
       var borders = scene.getObjectByName("borders")
@@ -45,6 +49,7 @@ function onMouseUp(event)
         boarderLine.vertices.push( new THREE.Vector3(borders.geometry.attributes.position.array[j+6],
                       borders.geometry.attributes.position.array[j+7],
                       borders.geometry.attributes.position.array[j+8]));
+        //console.log(line_intersect(upPoint,downPoint,boarderLine))
         intersections.push(line_intersect(upPoint,downPoint,boarderLine));
       }
 
@@ -54,20 +59,20 @@ function onMouseUp(event)
          if(intersections[i]!==null && maxX !== Math.max(maxX,intersections[i].x))
          {
                maxX=intersections[i].x;
-               upPoint.x = intersections[i].x;
-               upPoint.y = intersections[i].y;
+               //upPoint.x = intersections[i].x;
+               //upPoint.y = intersections[i].y;
          }
          if(intersections[i]!==null && minX !== Math.min(minX,intersections[i].x))
          {
              minX=intersections[i].x;
-             downPoint.x = intersections[i].x;
-             downPoint.y = intersections[i].y;
+             //downPoint.x = intersections[i].x;
+             //downPoint.y = intersections[i].y;
          }
       }
-      
+
       geometry.vertices.push(downPoint);
       geometry.vertices.push(upPoint);
-      var material = new THREE.LineBasicMaterial({color: 0x79bc0f});
+      var material = new THREE.LineBasicMaterial({color: 0x008080});
       var foldLine = new THREE.Line(geometry, material);
       foldLine.name = "foldLine";
 
@@ -82,7 +87,7 @@ function onMouseUp(event)
   }
 
 }
-function onInputChange(event)
+function onInputChange(event) //This keeps changing the points once you click outside of the input boxes.
 {
   var downPoint=new THREE.Vector3, upPoint=new THREE.Vector3;
 
@@ -157,4 +162,25 @@ function line_intersect(up, down, line)
         return null;
     }
     return new THREE.Vector3(x1 + ua*(x2 - x1),y1 + ua*(y2 - y1),z);
+}
+function reasonablePoints(point){
+  if(point.x > -10 && point.x < 10){
+    point.x = Math.trunc(point.x * 100)/100;
+  }
+  if(point.x < -10){
+    point.x = -10;
+  }
+  if(point.x > 10){
+    point.x = 10;
+  }
+  if(point.y > -10 && point.y < 10){
+    point.y = Math.trunc(point.y * 100)/100;
+  }
+  if(point.y < -10){
+    point.y = -10;
+  }
+  if(point.y > 10){
+    point.y = 10;
+  }
+
 }
