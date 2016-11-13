@@ -62,7 +62,7 @@ function init() {
 
     //***************************************************************************
     //add complex geometry for testing only function in drawstyle.js
-   var gridN=8;
+   var gridN=1;
 
     terrainFromIteration(gridN, -10,10,-10,10, paperGeometry.vertices,paperGeometry.faces);
 
@@ -131,7 +131,15 @@ function init() {
         scene.add(gridLines[i]);
     }
   //ORBITCONTROLS
-  controls = new THREE.OrbitControls(camera, renderer.domElement);
+  //controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls = new THREE.TrackballControls(camera, renderer.domElement);
+  controls.rotateSpeed = 2.0;
+  controls.zoomSpeed = 1.2;
+  controls.panSpeed = 0.8;
+  controls.noZoom = false;
+  controls.noPan = false;
+  controls.staticMoving = true;
+  controls.dynamicDampingFactor = 0.6;
   window.addEventListener( 'mousedown', onMouseDown, false );
   window.addEventListener( 'mouseup', onMouseUp, false );
   window.addEventListener( 'keydown', onKeyDown, false );
@@ -155,6 +163,7 @@ function onMouseDown(event)
 function onKeyDown(event)
 {
     if(event.keyCode =="32")
+        controls.reset()
         controls.enabled = false;
 }
 
