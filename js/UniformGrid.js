@@ -127,9 +127,9 @@
                 maxY = vertices[i].y;
         }
         minX = Math.floor(minX);
-        maxX = Math.ceil(maxX);
+        maxX = Math.floor(maxX);
         minY = Math.floor(minY);
-        maxY = Math.ceil(maxY);
+        maxY = Math.floor(maxY);
         
         for(var i=minY-this.y; i<=maxY-this.y; i+=this.cellHeight)
         {
@@ -179,7 +179,7 @@
     };
     
     //retrieves the faces of objects on the line specified by vertices
-	UniformGrid.prototype.retrieveF = function(vertices) {
+	UniformGrid.prototype.retrieveF = function(vertices,clearIds=true) {
         var points = this.supercover_line(vertices[0],vertices[1]);
         var returnObjects = [];
         var returnIds = [];
@@ -191,7 +191,8 @@
 
             returnObjects = returnObjects.concat(this.getObjects(floorX,floorY));
         }
-        this.returnIds = [];
+        if(clearIds)
+            this.returnIds = [];
         return returnObjects;
     };
       //get objects to rotate
@@ -215,83 +216,106 @@
         //get all objects on mouse side of line
         var points = this.supercover_line(line[0],line[1]);
         var returnObjects = [];
-        
+        //if(Math.abs(points[points.length-1].x-points[0].x)>3)
+        //{
+            while(points[points.length-1].x+1<this.width+this.x)
+                points.push(new THREE.Vector2(points[points.length-1].x+1, points[points.length-1].y));
+            while(points[0].x-1>this.x)
+                points.unshift(new THREE.Vector2(points[0].x-1, points[0].y));
+        //}
+                                           
         if(above)
         {
             //get all cells on mouse side of line
             for(var p=0; p<points.length; p++)
-            {
-                points[p].y += this.cellHeight; 
-                
+            {                
                 //only include cell if it is truely on mouse side of the line.
-                if(p+1==points.length || (points[p].x!=points[p+1].x && points[p].y!=points[p+1].y))
-                {
+               // if(p+1==points.length || (points[p].x!=points[p+1].x && points[p].y!=points[p+1].y))
+                //{
                     var floorX = Math.floor(points[p].x-this.x);
                     var floorY = Math.floor(points[p].y-this.y);
 
                     for(var h = floorY; h<this.height;h+=this.cellHeight)
-                        returnObjects = returnObjects.concat(this.getObjects(floorX,h));
-                }
-            }
-            
-            //get all cells on mouse line and determine if they are on mouse side of the line
-            var oldRetIds = this.returnIDs;
-            var possibleObjects = this.retrieveF(line);
-            this.returnIDs = oldRetIds;
-            for(var o=0; o<possibleObjects.length; o++)
-            {
-                var x1 = vertices[possibleObjects[o].a].x;
-                var y1 = vertices[possibleObjects[o].a].y;
-
-                var x2 = vertices[possibleObjects[o].b].x;
-                var y2 = vertices[possibleObjects[o].b].y;
-
-                var x3,y3;
-                if(possibleObjects[o].c !='undefined')
-                {
-                    x3 = vertices[possibleObjects[o].c].x;
-                    y3 = vertices[possibleObjects[o].c].y;
-                }
-
-                //object above line
-                var diff;
-                comparePoint = m*x1+b;
-                diff = Math.abs(comparePoint - y1);
-                if(comparePoint<y1 && diff>0.0000001)
-                {
-                    //possibleObjects has already bean ID checked
-                    returnObjects.push(possibleObjects[o]);
-                    continue;
-                }
-
-                comparePoint = m*x2+b;
-                diff = Math.abs(comparePoint - y2);
-                if(comparePoint<y2 && diff>0.0000001)
-                {
-                    //possibleObjects has already bean ID checked
-                    returnObjects.push(possibleObjects[o]);
-                    continue;
-                }
-
-                if(possibleObjects[o].c !='undefined')
-                {
-                    comparePoint = m*x3+b;
-                    diff = Math.abs(comparePoint - y3);
-                    if(comparePoint<y3 && diff>0.0000001)
                     {
-                        //possibleObjects has already bean ID checked
-                        returnObjects.push(possibleObjects[o]);
-                        continue;
+                        for(var o=0; o<this.cell[h][floorX].objectList.length; o++)
+                        {
+                            var possibleObjects = this.cell[h][floorX].objectList[o].objectFaces;
+                            var ObjectID =this.cell[h][floorX].objectList[o].id; 
+                            var x1 = vertices[possibleObjects.a].x;
+                            var y1 = vertices[possibleObjects.a].y;
+
+                            var x2 = vertices[possibleObjects.b].x;
+                            var y2 = vertices[possibleObjects.b].y;
+
+                            var x3,y3;
+                            if(possibleObjects.c !='undefined')
+                            {
+                                x3 = vertices[possibleObjects.c].x;
+                                y3 = vertices[possibleObjects.c].y;
+                            }
+
+                            //object above line
+                            var diff;
+                            comparePoint = m*x1+b;
+                            diff = Math.abs(comparePoint - y1);
+                            if(comparePoint<y1 && !this.returnIds.includes(ObjectID) && diff>0.0000001)
+                            {
+                                //possibleObjects has already bean ID checked
+                                returnObjects.push(possibleObjects);
+                                this.returnIds.push(ObjectID);
+                                continue;
+                            }
+
+                            comparePoint = m*x2+b;
+                            diff = Math.abs(comparePoint - y2);
+                            if(comparePoint<y2 && !this.returnIds.includes(ObjectID) && diff>0.0000001)
+                            {
+                                //possibleObjects has already bean ID checked
+                                returnObjects.push(possibleObjects);
+                                this.returnIds.push(ObjectID);
+                                continue;
+                            }
+
+                            if(possibleObjects.c !='undefined')
+                            {
+                                comparePoint = m*x3+b;
+                                diff = Math.abs(comparePoint - y3);
+                                if(comparePoint<y3 && !this.returnIds.includes(ObjectID) && diff>0.0000001)
+                                {
+                                    //possibleObjects has already bean ID checked
+                                    returnObjects.push(possibleObjects);
+                                    this.returnIds.push(ObjectID);
+                                    continue;
+                                }
+                            }
+                            //object below line
+                            //else if(comparePoint>y)
+
+                            //object on line
+                            //else       
+                        } 
+                    }
+                //}
+            }
+        }
+        
+        var oppositobjects=[];
+        for(var y=0; y<this.height; y++)
+        {
+            for(var x=0; x<this.width; x++)
+            {
+                for(var k = 0; k<this.cell[y][x].objectList.length;k++ ) 
+                {
+                    if(!this.returnIds.includes( this.cell[y][x].objectList[k].id ))
+                    {
+                        oppositobjects.push(this.cell[y][x].objectList[k].objectFaces);
+                        this.returnIds.push(this.cell[y][x].objectList[k].id);
                     }
                 }
-                //object below line
-                //else if(comparePoint>y)
-
-                //object on line
-                //else       
-            }    
+            }
         }
-        return returnObjects;
+        this.returnIds=[];
+        return [returnObjects,oppositobjects];
     }  
         
     UniformGrid.prototype.getObjects =function(x, y) {
@@ -316,7 +340,7 @@
 
         var p = new THREE.Vector2(p0.x, p0.y);
         var points = [new THREE.Vector2(p.x, p.y)];
-        for (var ix = 0, iy = 0; ix < nx || iy < ny;) {
+        for (var ix = 0, iy = 0; ix < nx && iy < ny;) {
             if ((ix+0.5) / nx == (iy+0.5) / ny) {
                 // next step is diagonal
                 p.x += sign_x;
