@@ -25,7 +25,7 @@
 * Removes faces from paperGeometry which collide with the line, and inserts new faces of the resultant remesh.
 */
 function triRemesh(faces, line){
-  //console.log("TRI REMESH")
+  console.log("TRI REMESH", faces.length)
   //Should probably check valid and non-empty input being given
   var new_paperGeometry = new THREE.Geometry();
   //Need to add all other non-colliding faces from old paperGeometry
@@ -45,33 +45,42 @@ function triRemesh(faces, line){
   }
 
   for(var i = 0; i < faces.length; i++){
+    console.log(paperGeometry.vertices[faces[i].a], paperGeometry.vertices[faces[i].b], paperGeometry.vertices[faces[i].c])
+    console.log("rayTraceLineTriIntersection(faces[i],line)",rayTraceLineTriIntersection(faces[i],line) )
     if(rayTraceLineTriIntersection(faces[i],line).length == 0){
+      console.log("bad triangle");
     //if(lineTriInt(faces[i], line).length == 0){
-      new_paperGeometry.faces.push(faces[i]);
+      new_paperGeometry.faces.push( new THREE.Face3(paperGeometry.faces[i].a, paperGeometry.faces[i].b, paperGeometry.faces[i].c));
       continue;
     }
     var new_triangles = triRemesh_helper(faces[i], line);
+    console.log("NEW TRIANGLES", new_triangles)
     for(var k = 0; k < new_triangles.length; k++){ //Each triangle
       //Add all the points to the end new_paperGeometry.vertices
-      console.log(new_triangles[k])
+
       new_paperGeometry.vertices.push(
         new THREE.Vector3(new_triangles[k][0].x, new_triangles[k][0].y, new_triangles[k][0].z),
         new THREE.Vector3(new_triangles[k][1].x, new_triangles[k][1].y, new_triangles[k][1].z),
         new THREE.Vector3(new_triangles[k][2].x, new_triangles[k][2].y, new_triangles[k][2].z)
       );
-      //Create and add face from the last three points pushed
-      //console.log("FACE PUSHED")
       var new_face = new THREE.Face3(new_paperGeometry.vertices.length-3, new_paperGeometry.vertices.length-2, new_paperGeometry.vertices.length-1);
       new_paperGeometry.faces.push(new_face);
+
+      //If new faces were pushed, need to remove old face
+      /*for(var f = 0; f < new_paperGeometry.faces.length; f++){
+        curr_face = new_paperGeometry.faces[i]
+        if(faces[i].a == curr_face.a && faces[i].b == curr_face.b && faces[i].c == curr_face.c){
+          paperGeometry.faces.splice(i,1);
+        }
+      }*/
+      //new_paperGeometry.verticesNeedUpdate=true;
     }
   }
   //mergeVertices to update vertices array
   new_paperGeometry.mergeVertices();
   //Delete old paperGeometry
   paperGeometry.dispose();
-  paperGeometry = null;
   paper.geometry.dispose();
-  paper.geometry = null;
 
   paperGeometry = new_paperGeometry;
   paper.geometry = paperGeometry;
@@ -369,7 +378,7 @@ function triRemesh_helper(triangle, line){
     }
     //Case 2.2: Side to side.
     else{
-      console.log("Side to side, intersections", intersection_points)
+      //console.log("Side to side, intersections", intersection_points)
       //Figure out which triangle vertex is by its lonesome on its side of the line.
       var intersected_sides = []
       for(var i = 0; i < intersection_points.length; i++){
@@ -383,7 +392,7 @@ function triRemesh_helper(triangle, line){
           intersected_sides.push(vertex_three, vertex_one);
         }
       }
-      console.log("intersected_sides", intersected_sides)
+      //console.log("intersected_sides", intersected_sides)
       var shared_vertex;
       //console.log("intersected_sides", intersected_sides)
       for(var i = 0; i<intersected_sides.length-1; i++){
@@ -396,7 +405,7 @@ function triRemesh_helper(triangle, line){
       }
 
       //Now figure out which are the non-shared vertices
-      console.log("v1, v2, v3, shared", vertex_one, vertex_two, vertex_three, shared_vertex)
+      //console.log("v1, v2, v3, shared", vertex_one, vertex_two, vertex_three, shared_vertex)
       var non_shared = [];
       if(vertex_one == shared_vertex){
         non_shared.push(vertex_two,vertex_three);
@@ -407,11 +416,13 @@ function triRemesh_helper(triangle, line){
       if(vertex_three == shared_vertex){
         non_shared.push(vertex_one,vertex_two);
       }
-      console.log("non_shared", non_shared)
+      //console.log("non_shared", non_shared)
       var ret_tri1 = [shared_vertex, intersection_points[0], intersection_points[1]],
           ret_tri2 = [intersection_points[0], intersection_points[1], non_shared[0]],
           ret_tri3 = [non_shared[0], non_shared[1], intersection_points[0]];
-      if(distance(non_shared[1], intersection_points[1]) < distance(non_shared[1], intersection_points[0])){
+
+      //Want the intersection point that is collinear on a side.
+      if(pointOnLine(intersection_points[1],[non_shared[1], shared_vertex])){
         ret_tri3 = [non_shared[0], non_shared[1], intersection_points[1]];
       }
       return [ret_tri1, ret_tri2, ret_tri3];
