@@ -165,7 +165,7 @@ function line_intersect(up, down, line)
 }
 function reasonablePoints(point){
   if(point.x > -10 && point.x < 10){
-    point.x = Math.trunc(point.x * 100)/100;
+    point.x = 5*Math.round(Math.trunc(point.x * 100)/5)/100;
   }
   if(point.x < -10){
     point.x = -10;
@@ -174,7 +174,7 @@ function reasonablePoints(point){
     point.x = 10;
   }
   if(point.y > -10 && point.y < 10){
-    point.y = Math.trunc(point.y * 100)/100;
+    point.y = 5*Math.round(Math.trunc(point.y * 100)/5)/100;
   }
   if(point.y < -10){
     point.y = -10;
