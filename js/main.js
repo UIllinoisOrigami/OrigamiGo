@@ -131,15 +131,16 @@ function init() {
         scene.add(gridLines[i]);
     }
   //ORBITCONTROLS
-  //controls = new THREE.OrbitControls(camera, renderer.domElement);
-  controls = new THREE.TrackballControls(camera, renderer.domElement);
+  controls = new THREE.OrbitControls(camera, renderer.domElement);    
+  /*controls = new THREE.TrackballControls(camera, renderer.domElement);
   controls.rotateSpeed = 2.0;
   controls.zoomSpeed = 1.2;
   controls.panSpeed = 0.8;
   controls.noZoom = false;
   controls.noPan = false;
   controls.staticMoving = true;
-  controls.dynamicDampingFactor = 0.6;
+  controls.dynamicDampingFactor = 0.6;*/
+    
   window.addEventListener( 'mousedown', onMouseDown, false );
   window.addEventListener( 'mouseup', onMouseUp, false );
   window.addEventListener( 'keydown', onKeyDown, false );
@@ -150,9 +151,9 @@ function init() {
 
 function animate(){
   checkDrawStyle();
+  controls.update();
   requestAnimationFrame(animate);
   renderer.render(scene, camera);
-  controls.update();
 }
 
 function onMouseDown(event)
@@ -163,8 +164,10 @@ function onMouseDown(event)
 function onKeyDown(event)
 {
     if(event.keyCode =="32")
-        controls.reset()
+    {
+        //controls.reset()
         controls.enabled = false;
+    }
 }
 
 function onKeyUp(event)

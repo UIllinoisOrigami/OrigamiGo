@@ -59,14 +59,14 @@ function onMouseUp(event)
          if(intersections[i]!==null && maxX !== Math.max(maxX,intersections[i].x))
          {
                maxX=intersections[i].x;
-               //upPoint.x = intersections[i].x;
-               //upPoint.y = intersections[i].y;
+               upPoint.x = intersections[i].x;
+               upPoint.y = intersections[i].y;
          }
          if(intersections[i]!==null && minX !== Math.min(minX,intersections[i].x))
          {
              minX=intersections[i].x;
-             //downPoint.x = intersections[i].x;
-             //downPoint.y = intersections[i].y;
+             downPoint.x = intersections[i].x;
+             downPoint.y = intersections[i].y;
          }
       }
 
