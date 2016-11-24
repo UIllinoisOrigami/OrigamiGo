@@ -1,5 +1,5 @@
 
-function performFold(){
+function performFold(level){
     //var paperGeometry = scene.getObjectByName("mesh").geometry;
   if(scene.getObjectByName("foldLine"))
     {
@@ -9,10 +9,17 @@ function performFold(){
       foldingLine.visible=false;
 
 
-      var possibleCollisions = uGrid.retrieveF(foldingLine.geometry.vertices);
+      var possibleCollisions = uGrid.retrieveF(foldingLine.geometry.vertices, level);
       triRemesh(possibleCollisions, foldingLine);
-
-      //reform grid after remeshing
+        
+      //this should be done in triRemesh. when you add a face. add level to faceLevel array.
+      for( var i = 0; i< paperGeometry.faces.length; i++)
+      {
+          if(faceLevel.length<=i)
+              faceLevel.push(level);
+      }
+        
+      //reform grid after remeshing no way to keep lvl???
       uGrid.clear();
       for( var i = 0; i< paperGeometry.faces.length; i++)
       {
@@ -20,14 +27,37 @@ function performFold(){
               paperGeometry.vertices[paperGeometry.faces[i].a],
               paperGeometry.vertices[paperGeometry.faces[i].b],
               paperGeometry.vertices[paperGeometry.faces[i].c]
-          ]
-          uGrid.add(triangle, paperGeometry.faces[i]);
+          ];
+          uGrid.add(triangle, paperGeometry.faces[i], faceLevel[i]);
       }
 
-      var objToRotate = uGrid.getObjToRotate(downPoint,foldingLine.geometry.vertices,paperGeometry.vertices);
+      var objToRotate = uGrid.getObjToRotate(downPoint,foldingLine.geometry.vertices,paperGeometry.vertices, level);
     
       //three.js will not let me rotate part of the geometry so I will rotate the vertices with a different lib.
       rotateSelectVertices(objToRotate[0],foldingLine.geometry.vertices);
+    
+      //reform grid after folding. thing of a way to make level accurate.
+      for( var i = 0; i< paperGeometry.faces.length; i++)
+      {
+          for( var j = 0; j< objToRotate[0].length; j++)
+          {
+            if(paperGeometry.faces[i] == objToRotate[0][j])
+              if(foldingLine.geometry.vertices[0].z>0)
+                  faceLevel[i]++;
+              else
+                  faceLevel[i]--;
+          }
+      }
+      uGrid.clear();
+      for( var i = 0; i< paperGeometry.faces.length; i++)
+      {
+          var triangle = [
+              paperGeometry.vertices[paperGeometry.faces[i].a],
+              paperGeometry.vertices[paperGeometry.faces[i].b],
+              paperGeometry.vertices[paperGeometry.faces[i].c]
+          ];
+          uGrid.add(triangle, paperGeometry.faces[i], faceLevel[i]);
+      }
         
       //split the mesh into 2 pieces so we can fold one of them
       /*removeFoldingFaces(objToRotate[0]);  
@@ -48,19 +78,20 @@ function performFold(){
 //rotates the vertices in facestorotate around line. no extra objects, no removing faces/vertices.
 function rotateSelectVertices(facesToRotate, line)
 {
-      var fv1 = line[0];
-      var fv2 = line[1];
+     foldHistory.push([]);
+     var fv1 = line[0];
+     var fv2 = line[1];
     
       //so we dont mess up the original points we make new ones.
-      fv1 = vec3.fromValues(fv1.x,fv1.y,fv1.z);
-      fv2 = vec3.fromValues(fv2.x,fv2.y,fv2.z);
+     fv1 = vec3.fromValues(fv1.x,fv1.y,fv1.z);
+     fv2 = vec3.fromValues(fv2.x,fv2.y,fv2.z);
     
-      vec3.sub(fv1,fv1,fv2);
-      var axis = fv1; 
-      vec3.normalize(axis,axis);
+     vec3.sub(fv1,fv1,fv2);
+     var axis = fv1; 
+     vec3.normalize(axis,axis);
     
-      var quate = quat.create();
-      quat.setAxisAngle(quate, axis, Math.PI);
+     var quate = quat.create();
+     quat.setAxisAngle(quate, axis, Math.PI);
      var rotatedVertices = [];
      for(var j =0; j<facesToRotate.length; j++)
      {
@@ -88,6 +119,8 @@ function rotateSelectVertices(facesToRotate, line)
               paperGeometry.vertices[facesToRotate[j].a].y=v1[1];
               paperGeometry.vertices[facesToRotate[j].a].z=v1[2];
               rotatedVertices.push(facesToRotate[j].a);
+             
+              foldHistory[foldHistory.length-1].push(facesToRotate[j].c);
          }
          if(!rotatedVertices.includes(facesToRotate[j].b))
          {
@@ -113,6 +146,8 @@ function rotateSelectVertices(facesToRotate, line)
               paperGeometry.vertices[facesToRotate[j].b].y=v1[1];
               paperGeometry.vertices[facesToRotate[j].b].z=v1[2];
               rotatedVertices.push(facesToRotate[j].b);
+             
+              foldHistory[foldHistory.length-1].push(facesToRotate[j].b);
          }
          if(!rotatedVertices.includes(facesToRotate[j].c))
          {
@@ -138,9 +173,12 @@ function rotateSelectVertices(facesToRotate, line)
               paperGeometry.vertices[facesToRotate[j].c].y=v1[1];
               paperGeometry.vertices[facesToRotate[j].c].z=v1[2];
               rotatedVertices.push(facesToRotate[j].c);
+             
+              foldHistory[foldHistory.length-1].push(facesToRotate[j].c);
          }
      }
-     paperGeometry.verticesNeedUpdate=true;      
+     foldHistory[foldHistory.length-1].unshift(Math.PI);
+     paperGeometry.verticesNeedUpdate=true;  
 }
 //removes the faces for that we are folding form the main object. needs some work.
 function removeFoldingFaces(facesToRemove)

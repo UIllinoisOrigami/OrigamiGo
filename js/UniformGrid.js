@@ -113,7 +113,7 @@
     };
     
     //adds the object with vertices and faces to the grid
-    UniformGrid.prototype.add = function(vertices, faces) {
+    UniformGrid.prototype.add = function(vertices, faces, level) {
         var minX=100 , maxX=-100, minY=100 , maxY=-100;
         for(var i=0; i<vertices.length; i++)
         {  
@@ -137,7 +137,8 @@
                 {
                         //lastId = this.cell[i][j].objectList[this.cell[i][j].objectList.length-1].id;
                         this.cell[i][j].objectList.push({objectFaces: faces,
-                                                         id: this.id});
+                                                         id: this.id,
+                                                         lvl: level});
                 }
 
         }
@@ -179,7 +180,7 @@
     };
     
     //retrieves the faces of objects on the line specified by vertices
-	UniformGrid.prototype.retrieveF = function(vertices,clearIds=true) {
+	UniformGrid.prototype.retrieveF = function(vertices, level, clearIds=true) {
         var points = this.supercover_line(vertices[0],vertices[1]);
         var returnObjects = [];
         var returnIds = [];
@@ -189,14 +190,14 @@
             var floorX = Math.floor(points[p].x-this.x);
             var floorY = Math.floor(points[p].y-this.y);
 
-            returnObjects = returnObjects.concat(this.getObjects(floorX,floorY));
+            returnObjects = returnObjects.concat(this.getObjects(floorX,floorY,level));
         }
         if(clearIds)
             this.returnIds = [];
         return returnObjects;
     };
       //get objects to rotate
-    UniformGrid.prototype.getObjToRotate =function(mouse, line, vertices) {
+    UniformGrid.prototype.getObjToRotate =function(mouse, line, vertices, level) {
         var m = (line[0].y-line[1].y)/(line[0].x-line[1].x);
         var b = line[0].y-m*line[0].x;
         var comparePoint = m*mouse.x+b;
@@ -239,53 +240,57 @@
                     {
                         for(var o=0; o<this.cell[h][floorX].objectList.length; o++)
                         {
-                            var possibleObjects = this.cell[h][floorX].objectList[o].objectFaces;
-                            var ObjectID =this.cell[h][floorX].objectList[o].id; 
-                            var x1 = vertices[possibleObjects.a].x;
-                            var y1 = vertices[possibleObjects.a].y;
-
-                            var x2 = vertices[possibleObjects.b].x;
-                            var y2 = vertices[possibleObjects.b].y;
-
-                            var x3,y3;
-                            if(possibleObjects.c !='undefined')
+                            var l = this.cell[h][floorX].objectList[o].lvl;
+                            if(l>=level)
                             {
-                                x3 = vertices[possibleObjects.c].x;
-                                y3 = vertices[possibleObjects.c].y;
-                            }
+                                var possibleObjects = this.cell[h][floorX].objectList[o].objectFaces;
+                                var ObjectID =this.cell[h][floorX].objectList[o].id; 
+                                var x1 = vertices[possibleObjects.a].x;
+                                var y1 = vertices[possibleObjects.a].y;
 
-                            //object above line
-                            var diff;
-                            comparePoint = m*x1+b;
-                            diff = Math.abs(comparePoint - y1);
-                            if(comparePoint<y1 && !this.returnIds.includes(ObjectID) && diff>0.0000001)
-                            {
-                                //possibleObjects has already bean ID checked
-                                returnObjects.push(possibleObjects);
-                                this.returnIds.push(ObjectID);
-                                continue;
-                            }
+                                var x2 = vertices[possibleObjects.b].x;
+                                var y2 = vertices[possibleObjects.b].y;
 
-                            comparePoint = m*x2+b;
-                            diff = Math.abs(comparePoint - y2);
-                            if(comparePoint<y2 && !this.returnIds.includes(ObjectID) && diff>0.0000001)
-                            {
-                                //possibleObjects has already bean ID checked
-                                returnObjects.push(possibleObjects);
-                                this.returnIds.push(ObjectID);
-                                continue;
-                            }
+                                var x3,y3;
+                                if(possibleObjects.c !='undefined')
+                                {
+                                    x3 = vertices[possibleObjects.c].x;
+                                    y3 = vertices[possibleObjects.c].y;
+                                }
 
-                            if(possibleObjects.c !='undefined')
-                            {
-                                comparePoint = m*x3+b;
-                                diff = Math.abs(comparePoint - y3);
-                                if(comparePoint<y3 && !this.returnIds.includes(ObjectID) && diff>0.0000001)
+                                //object above line
+                                var diff;
+                                comparePoint = m*x1+b;
+                                diff = Math.abs(comparePoint - y1);
+                                if(comparePoint<y1 && !this.returnIds.includes(ObjectID) && diff>0.0000001)
                                 {
                                     //possibleObjects has already bean ID checked
                                     returnObjects.push(possibleObjects);
                                     this.returnIds.push(ObjectID);
                                     continue;
+                                }
+
+                                comparePoint = m*x2+b;
+                                diff = Math.abs(comparePoint - y2);
+                                if(comparePoint<y2 && !this.returnIds.includes(ObjectID) && diff>0.0000001)
+                                {
+                                    //possibleObjects has already bean ID checked
+                                    returnObjects.push(possibleObjects);
+                                    this.returnIds.push(ObjectID);
+                                    continue;
+                                }
+
+                                if(possibleObjects.c !='undefined')
+                                {
+                                    comparePoint = m*x3+b;
+                                    diff = Math.abs(comparePoint - y3);
+                                    if(comparePoint<y3 && !this.returnIds.includes(ObjectID) && diff>0.0000001)
+                                    {
+                                        //possibleObjects has already bean ID checked
+                                        returnObjects.push(possibleObjects);
+                                        this.returnIds.push(ObjectID);
+                                        continue;
+                                    }
                                 }
                             }
                             //object below line
@@ -318,12 +323,13 @@
         return [returnObjects,oppositobjects];
     }  
         
-    UniformGrid.prototype.getObjects =function(x, y) {
+    UniformGrid.prototype.getObjects =function(x, y, l) {
         var retObj = [];
         if(x>=0 && y>=0 && x<this.width && y<this.height)
             for(var k = 0; k<this.cell[y][x].objectList.length;k++ ) 
             {
-                if(!this.returnIds.includes( this.cell[y][x].objectList[k].id ))
+                if(!this.returnIds.includes( this.cell[y][x].objectList[k].id ) &&
+                    this.cell[y][x].objectList[k].lvl >= l)
                 {
                     retObj.push(this.cell[y][x].objectList[k].objectFaces);
                     this.returnIds.push(this.cell[y][x].objectList[k].id);

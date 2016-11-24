@@ -11,11 +11,13 @@
             <td><input type="radio" name="visualStyle" id="normal" value="normal" checked="checked"> normal</td>
             <td>Mouse Down Point:</td>
             <td>Mouse Up Point:</td>
+            <td>Fold Level:</td>
         </tr>
         <tr>
             <td><input type="radio" name="visualStyle" id="wireframe" value="wireframe"> wireframe</td>
             <td>x:<input type="text" name="downPointX" style="width: 30px;"></td>
             <td>x:<input type="text" name="upPointX" style="width: 30px;"></td>
+            <td>lvl:<input type="text" name="foldLevel" value=0 style="width: 30px;"></td>
         </tr>
         <tr>
             <td><input type="checkbox" name="visualStyle" id="borders" value="border" > border</td>
@@ -32,7 +34,6 @@
 
   <script src="js/libs/three.min.js"></script>
   <script src="js/libs/gl-matrix-min.js"></script>
-  <script src="js/libs/webgl-utils.js"></script>
   <script src="js/libs/OrbitControls.js"></script>
   <script src="js/libs/TrackballControls.js"></script>
   <script src="js/libs/THREE.MeshLine-master/src/THREE.MeshLine.js"></script>

@@ -1,11 +1,14 @@
 var paperGeometry,
-    paper;
-var scene,
+    paper,
+    scene,
     camera,
     renderer,
     downPoint,
     allFoldLines,
+    foldHistory=[],
+    faceLevel=[],
     controls;
+    
 var uGrid = new UniformGrid(-11,-11,22,22);
 
 (function(){
@@ -79,7 +82,8 @@ function init() {
             paperGeometry.vertices[paperGeometry.faces[i].b],
             paperGeometry.vertices[paperGeometry.faces[i].c]
         ]
-        uGrid.add(triangle, paperGeometry.faces[i]);
+        uGrid.add(triangle, paperGeometry.faces[i],0);
+        faceLevel.push(0);
     }
 
   /*var geometry = new THREE.Geometry();
@@ -175,7 +179,10 @@ function onKeyUp(event)
     if(event.keyCode =="32")
         controls.enabled = true;
      if(event.keyCode =="16")
-        performFold();
+     {
+        var lvl = document.getElementsByName("foldLevel")[0].value;
+        performFold(Number(lvl));
+     }
 
 }
 
