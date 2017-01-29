@@ -1,28 +1,13 @@
 /**
 * @author Celestine Kao
-* Contains:
-* triRemesh(faces, line) <-- Weird bug when given just paperGeometry.faces. See below for example usage.
-* rayTraceLineTriIntersection(triangle, line)
-* f_VectorEquals(point1, point2)
-* triRemesh_helper(triVerts, lineVerts)
-* pointInTriangleRegion(point, triVerts)
-* findSpanningLine(line, triSides) <-- TO DO
-*/
-
-/** NOTES FOR LATER.
-* 1) We will  need to find where the fold line intersects
-*    the boarder and visual fold lines and re-mesh those lines but I think we should 1st focus
-*    on the paper and then add the lines later.
-* 2) Eventually change how triRemesh_helper handles one point of interesection
-* 3) Figure out triRemesh weird bug.
 */
 
 /**
-* Triangle re-mesh
 * If a line intersects a triangle/face, calculates repartitioning
 * of face to maintain all triangular sub-components.
-* Takes an array of triangle faces and a line object.
 * Removes faces from paperGeometry which collide with the line, and inserts new faces of the resultant remesh.
+* @param {Face3[]} faces
+# @param {Line3} line
 */
 function triRemesh(faces, line){
   console.log("TRI REMESH", faces.length)
@@ -87,6 +72,12 @@ function triRemesh(faces, line){
   //console.log(paper.geometry.faces.length)
 }
 
+/**
+* Returns array of intersecting points between a line and triangle.
+* Array can be empty.
+* @param {Face3} triangle
+* @param {Line3} line
+*/
 function lineTriInt(triangle, line){
 
   var side1 = [[paperGeometry.vertices[triangle.a].x, paperGeometry.vertices[triangle.a].y],
@@ -133,17 +124,21 @@ function lineTriInt(triangle, line){
   return intersection_points
 }
 
+/**
+* Returns distance between two points.
+* @param {Vector3} point1
+* @param {point2} point2
+*/
 function distance(point1, point2){
   return math.sqrt(math.pow(point2.x - point1.x,2) + math.pow(point2.y - point1.y,2))
 }
 
 /**
-* Ray Trace Line Triangle intersection
 * Uses ray tracing with to determine the first point of intersection (if any)
 * of a line with a triangle. Returns array of Vector3 points of intersection else [].
 * Returns [] when line has terminating point on triangle or when a triangle side lies on the line.
-* @param triangle - Face
-* @param line - Line
+* @param {Face3} triangle
+* @param {Line3} line
 */
 function rayTraceLineTriIntersection(triangle, line){
 
@@ -229,10 +224,9 @@ function rayTraceLineTriIntersection(triangle, line){
 }
 
 /**
-* Floating Vector Equals
 * Floating point sucks so need to check equality in a more special way
-* @param point1 - Vector3
-* @param point2 - Vector3
+* @param {Vector3} point1
+* @param {Vector3} point2
 */
 function f_VectorEquals(point1, point2){
   //console.log("VECTOR EQUALS")
@@ -246,9 +240,11 @@ function f_VectorEquals(point1, point2){
   return false;
 }
 
-/* *
+/**
 * Take point and array of line endpoints.
 * Returns true if point is on the line segment, else false.
+* @param {Vector3} point
+* @param {Vector3[]} line
 */
 function pointOnLine(point, line){
   var line_distance = distance(line[0], line[1] );
@@ -260,10 +256,9 @@ function pointOnLine(point, line){
 
 }
 /**
-* Triangle Remesh Helper
 * Returns an array of arrays of triangle vertices (Vector3), resulting from remeshing calculation.
-* @param triangle - Face
-* @param line - Line
+* @param {Face3} triangle
+* @param {Line3} line
 */
 function triRemesh_helper(triangle, line){
   //console.log("TRI REMESH HELPER")
@@ -431,12 +426,10 @@ function triRemesh_helper(triangle, line){
 }
 
 /**
-* Point in Triangle Region
-* Takes a point and an array of vertices of a triangle.
 * Returns true if the point lies within the same plane and region of the trangle's interior
 * Return false otherwise
-* @param point - Vector3
-* @param triangle - Face
+* @param {Vector3} point
+* @param {Face3} triangle
 * Note: This function also returns true if the point is on any of the triangle edges.
 *       Also assumes point and triangle are coplanar.
 */
@@ -458,10 +451,12 @@ function pointInTriangleRegion(point, triangle){
   }
   return true;
 }
+
 /**
-* Find Face
-* Takes a face, finds its index in paperGeometry.faces, and returns it.
-* Will be too slow as face array grows, will need to optimize.
+* Returns index of face in paperGeometry.faces
+* @param {Face3} face
+* @param {Face3[]} faces
+* Note: Will be too slow as face array grows, will need to optimize.
 */
 function findFace(face, faces){
   //console.log("FIND FACE");
