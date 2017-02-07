@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>OrigamiGo</title>
+    <link rel="stylesheet" href="main.css">
+
+  </head>
+  <body>
+
+    <form id="paperDimensions">
+      Set paper dimensions:<br>
+      Width (0,100]: <input type="number" id="paperWidth" value="10" min="1" oninput="setInitialGeometry()">
+      <br>
+      Height (0,100]: <input type="number" id="paperHeight" value="10" min="1" oninput="setInitialGeometry()">
+      <br><br>
+    </form>
+
+    <script src="three.min.js"></script>
+    <script src="TrackballControls.js"></script>
+    <script src="jquery-3.1.1.js"></script>
+    <script src="jquery-validate.js"></script>
+    <script src="origami.js"></script>
+    <script src="controls.js"></script>
+    <script src="main.js"></script>
+
+    <script>setInitialGeometry()</script>
+
+
+
+
+
+
+  </body>
+</html>

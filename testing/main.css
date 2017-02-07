@@ -1,0 +1,23 @@
+body{
+  margin: 0;
+  background-color: white;
+  overflow: hidden;
+}
+form{
+  position: absolute;
+}
+input[type="number"]{
+  width: 50px;
+}
+input{
+  width: 100%
+}
+
+/*#container {
+    background-color: #000;
+    width: 400px;
+    height: 200px;
+    border: 1px solid black;
+    margin: 10px auto;
+    padding: 0px;
+}*/
