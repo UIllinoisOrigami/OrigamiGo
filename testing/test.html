@@ -4,11 +4,12 @@
   <head>
     <meta charset="utf-8">
     <title>OrigamiGo</title>
-    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" type="text/css" href="main.css">
 
   </head>
   <body>
 
+    <div class="controlsContainer">
     <form id="paperDimensions">
       Set paper dimensions:<br>
       Width (0,100]: <input type="number" id="paperWidth" value="10" min="1" oninput="setInitialGeometry()">
@@ -16,6 +17,24 @@
       Height (0,100]: <input type="number" id="paperHeight" value="10" min="1" oninput="setInitialGeometry()">
       <br><br>
     </form>
+
+    <form id="creaseCoordinates">
+      Crease points:<br>
+      x_1: <input type="number" id="creaseX1" value="0" step="0.1" oninput="drawCrease(this)">
+      y_1:<input type="number" id="creaseY1" value="0" step="0.1" oninput="drawCrease(this)">
+      <br>
+      x_2: <input type="number" id="creaseX2" value="0" step="0.1" oninput="drawCrease(this)">
+      y_2:<input type="number" id="creaseY2" value="0" step="0.1" oninput="drawCrease(this)">
+      <br><br>
+    </form>
+
+    <button id="makeFold" onclick="fold()"> Fold </button>
+
+
+  <!--  <input type="checkbox" id="wireframeView" onclick="viewWireframe(this)"> <a>Wireframe </a> -->
+
+
+    </div>
 
     <script src="three.min.js"></script>
     <script src="TrackballControls.js"></script>
@@ -26,6 +45,7 @@
     <script src="main.js"></script>
 
     <script>setInitialGeometry()</script>
+
 
 
 

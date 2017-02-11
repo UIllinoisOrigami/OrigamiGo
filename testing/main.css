@@ -4,7 +4,8 @@ body{
   overflow: hidden;
 }
 form{
-  position: absolute;
+  /*position: absolute;
+  border: 2px solid black;*/
 }
 input[type="number"]{
   width: 50px;
@@ -12,6 +13,31 @@ input[type="number"]{
 input{
   width: 100%
 }
+button{
+  background-color: #4CAF50; /* Green */
+  border: none;
+  color: white;
+  padding: 10px 25px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+button:active{
+  color: #504caf;
+}
+
+.controlsContainer {
+  float: right;
+  width: 19.5vw;
+  height: 100vh;
+  padding: 2px 0px 0px 2px;
+
+}
+
 
 /*#container {
     background-color: #000;

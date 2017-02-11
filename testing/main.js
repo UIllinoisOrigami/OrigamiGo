@@ -1,6 +1,7 @@
 
 var scene, camera, renderer,
-    shape, geometry, material, mesh;
+    shape, geometry, material, mesh,
+    line_geometry, line, lineMaterial, line_mesh;
 
 init();
 animate();
@@ -9,7 +10,7 @@ function init() {
 
   //SCENE
   scene = new THREE.Scene();
-  var WIDTH = window.innerWidth,
+  var WIDTH = window.innerWidth * .8,
       HEIGHT = window.innerHeight;
   scene.background = new THREE.Color( 0xffffff );
 
@@ -18,12 +19,6 @@ function init() {
   renderer.setSize(WIDTH, HEIGHT);
   document.body.appendChild(renderer.domElement);
 
-  /*var container = document.getElementById("container");
-  var renderer = new THREE.WebGLRenderer();
-  renderer.setSize(container.offsetWidth, container.offsetHeight);
-  container.appendChild(renderer.domElement);
-  */
-
   //CAMERA
   camera = new THREE.PerspectiveCamera(45, WIDTH/HEIGHT, 0.1, 20000);
   camera.position.set(0,0,15);
@@ -31,7 +26,7 @@ function init() {
 
   //WINDOW RESIZING
   window.addEventListener('resize', function() {
-    var WIDTH = window.innerWidth,
+    var WIDTH = window.innerWidth * .8,
         HEIGHT = window.innerHeight;
     renderer.setSize(WIDTH, HEIGHT);
     camera.aspect = WIDTH / HEIGHT;
@@ -43,8 +38,9 @@ function init() {
   light.position.set(-100, 200, 100);
   scene.add(light);
 
-  //LOAD PLANE/SQUARE
+  //LOAD PLANE/SQUARE/LINE
   material = new THREE.MeshBasicMaterial( { color: 0x79bcff, wireframe: true} );
+  lineMaterial = new THREE.LineBasicMaterial({color: 0xaf504c});
 
   //ORBITCONTROLS
   controls = new THREE.TrackballControls(camera, renderer.domElement);
