@@ -262,7 +262,6 @@ function pointOnLine(point, line){
 */
 function triRemesh_helper(triangle, line){
   //console.log("TRI REMESH HELPER")
-  //console.log("TRIANGLE", )
   //var intersection_points = lineTriInt(triangle, line);
   var intersection_points = rayTraceLineTriIntersection(triangle, line);
   console.log("intersection_points", intersection_points)
@@ -282,7 +281,7 @@ function triRemesh_helper(triangle, line){
         inner_point = line.geometry.vertices[1];
       }
     }
-    else{
+    else{  //Do I even need this?? lol. 
       if(f_VectorEquals(intersection_points[0],line.geometry.vertices[0]) == false && pointInTriangleRegion(line.geometry.vertices[0], triangle)){
         inner_point = line.geometry.vertices[0];
       }

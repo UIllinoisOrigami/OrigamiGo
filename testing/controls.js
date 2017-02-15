@@ -67,7 +67,7 @@ function getCreaseInputs(input){
   var point1 = new THREE.Vector3(x1, y1, 0);
   var point2 = new THREE.Vector3(x2, y2, 0);
 
-  return [point1, point2]
+  return [point1, point2];
 }
 
 
