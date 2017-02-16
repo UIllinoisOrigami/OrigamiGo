@@ -10,7 +10,7 @@ function init() {
 
   //SCENE
   scene = new THREE.Scene();
-  var WIDTH = window.innerWidth * .8,
+  var WIDTH = window.innerWidth * 0.8,
       HEIGHT = window.innerHeight;
   scene.background = new THREE.Color( 0xffffff );
 
@@ -26,7 +26,7 @@ function init() {
 
   //WINDOW RESIZING
   window.addEventListener('resize', function() {
-    var WIDTH = window.innerWidth * .8,
+    var WIDTH = window.innerWidth * 0.8,
         HEIGHT = window.innerHeight;
     renderer.setSize(WIDTH, HEIGHT);
     camera.aspect = WIDTH / HEIGHT;
