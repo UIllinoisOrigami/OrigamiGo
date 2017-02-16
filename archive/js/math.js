@@ -10,7 +10,7 @@
 # @param {Line3} line
 */
 function triRemesh(faces, line){
-  console.log("TRI REMESH", faces.length)
+  console.log("TRI REMESH", faces.length);
   //Should probably check valid and non-empty input being given
   var new_paperGeometry = new THREE.Geometry();
   //Need to add all other non-colliding faces from old paperGeometry
@@ -21,25 +21,25 @@ function triRemesh(faces, line){
     );
   }
   //Now add to new_paperGeometry if not in faces
-  for(var i = 0; i < paperGeometry.faces.length; i++){
-    if(findFace(paperGeometry.faces[i], faces) == false){
+  for(i = 0; i < paperGeometry.faces.length; i++){
+    if(findFace(paperGeometry.faces[i], faces) === false){
       new_paperGeometry.faces.push(
         new THREE.Face3(paperGeometry.faces[i].a, paperGeometry.faces[i].b, paperGeometry.faces[i].c)
       );
     }
   }
 
-  for(var i = 0; i < faces.length; i++){
-    console.log(paperGeometry.vertices[faces[i].a], paperGeometry.vertices[faces[i].b], paperGeometry.vertices[faces[i].c])
-    console.log("rayTraceLineTriIntersection(faces[i],line)",rayTraceLineTriIntersection(faces[i],line) )
-    if(rayTraceLineTriIntersection(faces[i],line).length == 0){
+  for(i = 0; i < faces.length; i++){
+    console.log(paperGeometry.vertices[faces[i].a], paperGeometry.vertices[faces[i].b], paperGeometry.vertices[faces[i].c]);
+    console.log("rayTraceLineTriIntersection(faces[i],line)",rayTraceLineTriIntersection(faces[i],line) );
+    if(rayTraceLineTriIntersection(faces[i],line).length === 0){
       console.log("bad triangle");
     //if(lineTriInt(faces[i], line).length == 0){
       new_paperGeometry.faces.push( new THREE.Face3(paperGeometry.faces[i].a, paperGeometry.faces[i].b, paperGeometry.faces[i].c));
       continue;
     }
     var new_triangles = triRemesh_helper(faces[i], line);
-    console.log("NEW TRIANGLES", new_triangles)
+    console.log("NEW TRIANGLES", new_triangles);
     for(var k = 0; k < new_triangles.length; k++){ //Each triangle
       //Add all the points to the end new_paperGeometry.vertices
 
@@ -81,10 +81,10 @@ function triRemesh(faces, line){
 function lineTriInt(triangle, line){
 
   var side1 = [[paperGeometry.vertices[triangle.a].x, paperGeometry.vertices[triangle.a].y],
-              [paperGeometry.vertices[triangle.b].x, paperGeometry.vertices[triangle.b].y]]
+              [paperGeometry.vertices[triangle.b].x, paperGeometry.vertices[triangle.b].y]],
 
       side2 = [[paperGeometry.vertices[triangle.b].x, paperGeometry.vertices[triangle.b].y],
-              [paperGeometry.vertices[triangle.c].x, paperGeometry.vertices[triangle.c].y]]
+              [paperGeometry.vertices[triangle.c].x, paperGeometry.vertices[triangle.c].y]],
 
       side3 = [[paperGeometry.vertices[triangle.c].x, paperGeometry.vertices[triangle.c].y],
               [paperGeometry.vertices[triangle.a].x, paperGeometry.vertices[triangle.a].y]];
@@ -100,7 +100,7 @@ function lineTriInt(triangle, line){
 
   for(var i = 0; i < 3; i++){
       var intersection = math.intersect(trisides[i][0], trisides[i][1], line1, line2 );
-      if( intersection == null){
+      if( intersection === null){
         continue;
       }
       var point = new THREE.Vector3(intersection[0],intersection[1], 0.1);
@@ -112,16 +112,16 @@ function lineTriInt(triangle, line){
           in_flag = true;
         }
       }
-      var segment_distance = distance(point, line.geometry.vertices[0]) + distance(point, line.geometry.vertices[1])
+      var segment_distance = distance(point, line.geometry.vertices[0]) + distance(point, line.geometry.vertices[1]);
       //console.log("line, segment", line_distance,segment_distance)
       //console.log("precision", Math.abs(line_distance - segment_distance))
-      if(in_flag == false && (segment_distance == line_distance || Math.abs(line_distance - segment_distance) < .001)){
+      if(in_flag === false && (segment_distance == line_distance || Math.abs(line_distance - segment_distance) < 0.001)){
         //console.log("push", point)
         intersection_points.push(point);
       }
     }
 
-  return intersection_points
+  return intersection_points;
 }
 
 /**
@@ -130,7 +130,7 @@ function lineTriInt(triangle, line){
 * @param {point2} point2
 */
 function distance(point1, point2){
-  return math.sqrt(math.pow(point2.x - point1.x,2) + math.pow(point2.y - point1.y,2))
+  return math.sqrt(math.pow(point2.x - point1.x,2) + math.pow(point2.y - point1.y,2));
 }
 
 /**
@@ -163,7 +163,7 @@ function rayTraceLineTriIntersection(triangle, line){
   var dir_vec = new THREE.Vector3(line.geometry.vertices[1].x - line.geometry.vertices[0].x, line.geometry.vertices[1].y - line.geometry.vertices[0].y, line.geometry.vertices[1].z - line.geometry.vertices[0].z);
   dir_vec.normalize();
   //Create ray from line starting point line.vertices[0]
-  var origin = line.geometry.vertices[0]
+  var origin = line.geometry.vertices[0];
   var ray = new THREE.Raycaster(origin, dir_vec);
   var intersections = ray.intersectObjects([line1, line2,line3]);
   //console.log("Ray intersections:", intersections)
@@ -173,7 +173,7 @@ function rayTraceLineTriIntersection(triangle, line){
   var ray_length = distance(origin,line.geometry.vertices[1]);
   for(var i = 0; i < intersections.length; i++){
     //Pass on any points outside the bounds.
-    if(intersections[i].distance > ray_length && Math.abs(intersections[i].distance - ray_length) > .0001){
+    if(intersections[i].distance > ray_length && Math.abs(intersections[i].distance - ray_length) > 0.0001){
       continue;
     }
     else{
@@ -281,7 +281,7 @@ function triRemesh_helper(triangle, line){
         inner_point = line.geometry.vertices[1];
       }
     }
-    else{  //Do I even need this?? lol. 
+    else{  //Do I even need this?? lol.
       if(f_VectorEquals(intersection_points[0],line.geometry.vertices[0]) == false && pointInTriangleRegion(line.geometry.vertices[0], triangle)){
         inner_point = line.geometry.vertices[0];
       }
