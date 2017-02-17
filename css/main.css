@@ -18,7 +18,9 @@ input[type="text"]{
 input[type="button"]{
     width: 100px;
 }
-
+input[type="range"]{
+    width: 80%;
+}
 input {
     width: 100%
 }

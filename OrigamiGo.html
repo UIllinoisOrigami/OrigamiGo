@@ -34,14 +34,15 @@
 
         <div id="invisibleControls">
 
-            <form name="creaseCoordinates">
-                Crease points:<br> x_1: <input type="number" id="creaseX1" value="0" step="0.1" oninput="drawCrease(this)"> y_1:
-                <input type="number" id="creaseY1" value="0" step="0.1" oninput="drawCrease(this)">
-                <br> x_2: <input type="number" id="creaseX2" value="0" step="0.1" oninput="drawCrease(this)"> y_2:
-                <input type="number" id="creaseY2" value="0" step="0.1" oninput="drawCrease(this)">
+            <form id="creaseCoordinates">
+                Crease points:<br> x_1: <input type="number" id="creaseX1" value="0" step="0.1" oninput="drawCrease(this)"> y_1: <input type="number" id="creaseY1" value="0" step="0.1" oninput="drawCrease(this)">
+                <br> x_2: <input type="number" id="creaseX2" value="0" step="0.1" oninput="drawCrease(this)"> y_2: <input type="number" id="creaseY2" value="0" step="0.1" oninput="drawCrease(this)">
                 <br><br>
             </form>
-            <button onclick="fold()"> Fold </button>
+            <form>
+                Fold angle <input type="range" id="foldAngle" value="0" step="0.1" min="-180" max="180" oninput="rotate()">
+            </form>
+            <button onclick="fold()"> Finalize Fold </button>
         </div>
 
         <!--  <input type="checkbox" id="wireframeView" onclick="viewWireframe(this)"> <a>Wireframe </a> -->

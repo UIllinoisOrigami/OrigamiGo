@@ -87,11 +87,30 @@ function drawCrease(input) {
     if (line) {
         scene.remove(line);
     }
+
     var points = getCreaseInputs(input);
+    if(isValidCrease(input) === false){
+        return;
+    }
     line_geometry = new THREE.Geometry();
     line_geometry.vertices.push(points[0], points[1]);
     line = new THREE.Line(line_geometry, lineMaterial);
     scene.add(line);
+}
+
+/**
+* Crease needs to be a line, not a point.
+* @return {Boolean}
+*/
+function isValidCrease(input){
+    var points = getCreaseInputs(input);
+    if(isValidInput(input) === false || points[0].equals(points[1])){
+        $("#foldAngle").prop('disabled', true);
+        return false;
+    }
+    $("#foldAngle").prop('disabled', false);
+    $("#creaseCoordinates").css("background-color", "transparent");
+    return true;
 }
 
 /* DOES NOT WORK AT ALL FOR ANY OTHER CASES, this is where life gets harder*/
@@ -99,6 +118,8 @@ function drawCrease(input) {
 * Fold operation
 */
 function fold() {
+
+    clearSceneOfMeshes();
 
     //Make new points array
     var point1 = new THREE.Vector2(line_geometry.vertices[0].x, line_geometry.vertices[0].y),
@@ -111,12 +132,14 @@ function fold() {
         point2, point1, new THREE.Vector2(5, 5)
     ];
 
-    clearSceneOfMeshes();
+
     makeShape(points1);
     scene.add(mesh);
     makeShape(points2);
     scene.add(mesh);
-    mesh.geometry.rotateX(Math.PI);
+    //mesh.geometry.rotateX(Math.PI);
+    rotateAxis(mesh, getFoldAxis(), Math.PI/2);
+
 
     //Initialize new State and add new crease line
     var state = new State();
@@ -128,18 +151,52 @@ function fold() {
     //Update ORIGAMI
     ORIGAMI.states.push(state);
     ORIGAMI.currentStateIndex += 1;
+    console.log(ORIGAMI);
 }
-
 
 function clearSceneOfMeshes(){
     scene.children.forEach(function(object){
-        if(object.type === "Mesh")
+        if(object.type === "Mesh" || object.type === "Line")
         scene.remove(object);
     });
+    if (line){
+        scene.remove(line);
+    }
 }
 
-function rotateAxis(face, points) {
+/**
+* Calculate rotation axis
+* @return {Vector3} normalized direction vector
+*/
+function getFoldAxis(){
+    var axis = new THREE.Vector3();
+    var points = getCreaseInputs($("#creaseX1"));
+    axis.subVectors(points[1], points[0]);
+    axis.normalize();
+    //console.log("axis", axis);
+    return axis;
+}
 
+/**
+* @param {Mesh} face
+* @param {Vector3} axis
+* @param {Number} radians
+*/
+/*function rotateAxis(mesh, axis, radians) {
+    console.log(mesh.rotation);
+    mesh.rotateOnAxis(axis, radians);
+    console.log(mesh.rotation);
+}
+*/
+
+/**
+* Real-time Rotation
+*/
+function rotate(){
+    var angleDegrees = $("#foldAngle").val();
+    var angleRadians = (angleDegrees/360)*(2*Math.PI);
+    var quaternion = new THREE.Quaternion().setFromAxisAngle(getFoldAxis(), angleRadians);
+    mesh.setRotationFromQuaternion(quaternion.normalize());
 }
 
 function Origami(modelName){
@@ -153,5 +210,3 @@ function State(){
     this.creaseLines = []; //Array of THREE.Line objects
     this.shapeGeometries = []; //Array of meshes
 }
-
-//origmami clean up

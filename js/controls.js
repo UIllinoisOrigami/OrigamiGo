@@ -15,13 +15,20 @@ function isValidInput(inputElement) {
 /**
 * Press the space bar to freeze the camera controls.
 * Also takes focus off input elements.
+*
+* Press Z to reset camera view.
 */
 function onKeyDown(event) {
     if (event.keyCode == "32") {
         $(document.activeElement).blur();
         controls.enabled = false;
     }
+
+    if (event.keyCode == "90"){
+        controls.reset();
+    }
 }
+
 /**
 * Enable camera controls again upon spacebar up.
 */

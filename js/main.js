@@ -12,7 +12,7 @@ function init() {
   scene = new THREE.Scene();
   var WIDTH = window.innerWidth * 0.8,
       HEIGHT = window.innerHeight;
-  scene.background = new THREE.Color( 0xffffff );
+  scene.background = new THREE.Color( 0x2D3037 );
 
   //RENDERER
   renderer = new THREE.WebGLRenderer({antialias:true});
