@@ -13,6 +13,21 @@ function isValidInput(inputElement) {
 }
 
 /**
+* Crease needs to be a line, not a point.
+* @return {Boolean}
+*/
+function isValidCrease(input){
+    var points = getCreaseInputs(input);
+    if(isValidInput(input) === false || points[0].equals(points[1])){
+        $("#foldAngle").prop('disabled', true);
+        return false;
+    }
+    $("#foldAngle").prop('disabled', false);
+    $("#creaseCoordinates").css("background-color", "transparent");
+    return true;
+}
+
+/**
 * Press the space bar to freeze the camera controls.
 * Also takes focus off input elements.
 *
