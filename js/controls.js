@@ -1,3 +1,7 @@
+//TODO implement select mesh/face feature for rotation
+//TODO make isValidCrease more robust, differentiate between valid crease and valid line
+//TODO if valid crease, make the meshes and enable angle slider after a face has been chosen. disable slider as soon as crease no longer valid.
+//TODO view options, mesh vs solid, crease
 /**
 * Checks input field elements are strictly numeric type and non-null.
 * Highlights input field if invalid input.
