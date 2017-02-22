@@ -4,9 +4,9 @@ body {
     overflow: hidden;
 }
 
-form {
-    /*position: absolute;
-  border: 2px solid black;*/
+form[id="viewControls"] {
+    position: absolute;
+    color: white;
 }
 
 input[type="number"] {
@@ -20,9 +20,6 @@ input[type="button"]{
 }
 input[type="range"]{
     width: 80%;
-}
-input {
-    width: 100%
 }
 
 button {

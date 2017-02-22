@@ -23,7 +23,7 @@ function fold() {
     makeShape(points2);
     scene.add(mesh);
     //mesh.geometry.rotateX(Math.PI);
-    rotateAxis(mesh, getFoldAxis(), Math.PI/2);
+    rotate(mesh, getFoldAxis(), Math.PI/2);
 
 
     //Initialize new State and add new crease line
@@ -82,12 +82,20 @@ function makeShape(points) {
 * Real-time Rotation
 */
 function rotate(){
-    var angleDegrees = $("#foldAngle").val();
+    //Need to select mesh/face to rotate
+    //Disable if in state 0
+    if(ORIGAMI.currentStateIndex === 0){ //or no face selected
+        return;
+    }
+    var angleDegrees = getRotationAngle();
     var angleRadians = (angleDegrees/360)*(2*Math.PI);
     var quaternion = new THREE.Quaternion().setFromAxisAngle(getFoldAxis(), angleRadians);
     mesh.setRotationFromQuaternion(quaternion.normalize());
 }
 
+function rotateFace(){
+
+}
 /**
 * Draws a crease line, updates on Crease Point input change
 */

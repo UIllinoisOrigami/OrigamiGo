@@ -11,13 +11,22 @@
 
 <body>
 
+    <form id="viewControls">
+        <input type="radio" name="gender" value="default" onclick="changeViewStyle(this)" checked> Default
+        <input type="radio" name="gender" value ="wireframe" onclick="changeViewStyle(this)"> Wireframe
+        <input type="radio" name="gender" value="crease" onclick="changeViewStyle(this)"> Crease Pattern
+    </form>
+
     <script type="text/javascript" src="js/libs/three.min.js"></script>
     <script type="text/javascript" src="js/libs/TrackballControls.js"></script>
     <script type="text/javascript" src="js/libs/jquery-3.1.1.js"></script>
     <script type="text/javascript" src="js/libs/jquery-validate.js"></script>
+    <script type="text/javascript" src="js/animation.js"></script>
     <script type="text/javascript" src="js/origami.js"></script>
     <script type="text/javascript" src="js/controls.js"></script>
     <script type="text/javascript" src="js/main.js"></script>
+
+
 
     <div class="controlsContainer">
         <form name="modelName">
@@ -35,8 +44,8 @@
         <div id="invisibleControls">
 
             <form id="creaseCoordinates">
-                Crease points:<br> x_1: <input type="number" id="creaseX1" value="0" step="0.1" oninput="drawCrease(this)"> y_1: <input type="number" id="creaseY1" value="0" step="0.1" oninput="drawCrease(this)">
-                <br> x_2: <input type="number" id="creaseX2" value="0" step="0.1" oninput="drawCrease(this)"> y_2: <input type="number" id="creaseY2" value="0" step="0.1" oninput="drawCrease(this)">
+                Crease points:<br> x_1: <input type="number" id="creaseX1" value="5" step="0.1" oninput="drawCrease(this)"> y_1: <input type="number" id="creaseY1" value="5" step="0.1" oninput="drawCrease(this)">
+                <br> x_2: <input type="number" id="creaseX2" value="-5" step="0.1" oninput="drawCrease(this)"> y_2: <input type="number" id="creaseY2" value="-5" step="0.1" oninput="drawCrease(this)">
                 <br><br>
             </form>
             <form>

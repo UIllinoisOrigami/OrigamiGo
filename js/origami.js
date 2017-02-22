@@ -46,15 +46,9 @@ function setInitialGeometry() {
 * Makes other paper controls visible.
 */
 function setupOrigamiModel(){
-    $("#paperWidth").prop("readonly", true);
-    $("#paperHeight").prop("readonly", true);
-
-    //Detach PaperDimensions form and StarProject button from page.
-    $("#paperDimensions").detach();
-    $("#startProject").detach();
-
-    //Make invisibleControls visible
-    $("#invisibleControls").css("display", "inline");
+    makeControlsInvisible($('#paperDimensions'));
+    makeControlsInvisible($('#startProject'));
+    makeControlsVisbile($('#invisibleControls'));
 
     //Initialize State object
     var state = new State();

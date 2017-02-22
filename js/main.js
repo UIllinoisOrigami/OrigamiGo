@@ -39,7 +39,7 @@ function init() {
   scene.add(light);
 
   //LOAD PLANE/SQUARE/LINE
-  material = new THREE.MeshBasicMaterial( { color: 0x79bcff, wireframe: true} );
+  material = new THREE.MeshBasicMaterial( { color: 0x79bcff} );
   lineMaterial = new THREE.LineBasicMaterial({color: 0xaf504c});
 
   //ORBITCONTROLS

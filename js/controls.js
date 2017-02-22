@@ -3,9 +3,9 @@
 //TODO if valid crease, make the meshes and enable angle slider after a face has been chosen. disable slider as soon as crease no longer valid.
 //TODO view options, mesh vs solid, crease
 /**
-* Checks input field elements are strictly numeric type and non-null.
-* Highlights input field if invalid input.
-*/
+ * Checks input field elements are strictly numeric type and non-null.
+ * Highlights input field if invalid input.
+ */
 function isValidInput(inputElement) {
     if (inputElement.value && $(inputElement)[0].checkValidity()) {
         $(inputElement).css("background-color", "transparent");
@@ -17,12 +17,12 @@ function isValidInput(inputElement) {
 }
 
 /**
-* Crease needs to be a line, not a point.
-* @return {Boolean}
-*/
-function isValidCrease(input){
+ * Crease needs to be a line, not a point.
+ * @return {Boolean}
+ */
+function isValidCrease(input) {
     var points = getCreaseInputs(input);
-    if(isValidInput(input) === false || points[0].equals(points[1])){
+    if (isValidInput(input) === false || points[0].equals(points[1])) {
         $("#foldAngle").prop('disabled', true);
         return false;
     }
@@ -32,25 +32,25 @@ function isValidCrease(input){
 }
 
 /**
-* Press the space bar to freeze the camera controls.
-* Also takes focus off input elements.
-*
-* Press Z to reset camera view.
-*/
+ * Press the space bar to freeze the camera controls.
+ * Also takes focus off input elements.
+ *
+ * Press Z to reset camera view.
+ */
 function onKeyDown(event) {
     if (event.keyCode == "32") {
         $(document.activeElement).blur();
         controls.enabled = false;
     }
 
-    if (event.keyCode == "90"){
+    if (event.keyCode == "90") {
         controls.reset();
     }
 }
 
 /**
-* Enable camera controls again upon spacebar up.
-*/
+ * Enable camera controls again upon spacebar up.
+ */
 function onKeyUp(event) {
     if (event.keyCode == "32") {
         controls.enabled = true;
@@ -58,10 +58,10 @@ function onKeyUp(event) {
 }
 
 /**
-* Gets X1, X2, Y1, Y2 from input fields.
-* Returns Vector3 type because THREE.Line only takes Vector3.
-* @return {Vector3[]}
-*/
+ * Gets X1, X2, Y1, Y2 from input fields.
+ * Returns Vector3 type because THREE.Line only takes Vector3.
+ * @return {Vector3[]}
+ */
 function getCreaseInputs(input) {
     var x1 = Number(document.getElementById('creaseX1').value),
         y1 = Number(document.getElementById('creaseY1').value),
@@ -111,19 +111,47 @@ function getCreaseInputs(input) {
     return [point1, point2];
 }
 
-function getOrigamiModelName(){
+function getOrigamiModelName() {
     var name = document.getElementById('modelName').value;
     return name;
 }
 
-function setOrigamiModelName(inputElement){
+function setOrigamiModelName(inputElement) {
     var name = inputElement.value;
-    if(ORIGAMI){
+    if (ORIGAMI) {
         ORIGAMI.modelName = name;
     }
 }
 
+function changeViewStyle(input) {
+    if ($(input).val() === "default") {
+        scene.traverse(function(child) {
+            if (child instanceof THREE.Mesh)
+                child.material.wireframe = false;
+        });
+    }
+    if ($(input).val() === "wireframe") {
+        scene.traverse(function(child) {
+            if (child instanceof THREE.Mesh)
+                child.material.wireframe = true;
+        });
+    }
+    if ($(input).val() === "crease") {
+        //load creases
+    }
+}
 
+function getRotationAngle() {
+    return $('#foldAngle').val();
+}
+
+function makeControlsInvisible(element) {
+    $(element).css("display", "none");
+}
+
+function makeControlsVisbile(element) {
+    $(element).css("display", "inline");
+}
 
 //TODO Enable options to change view styles. Wireframe, solid, crease, etc.
 /*function viewWireframe(checkbox){
