@@ -2,7 +2,7 @@
 var scene, camera, renderer,
     shape, geometry, material, mesh,
     line_geometry, line, lineMaterial, line_mesh,
-    raycaster, mouse;
+    raycaster, mouse, mouseToWorld;
 
 init();
 animate();
@@ -40,7 +40,7 @@ function init() {
   scene.add(light);
 
   //LOAD PLANE/SQUARE/LINE
-  material = new THREE.MeshBasicMaterial( { color: 0x79bcff, side: THREE.DoubleSide} );
+  material = new THREE.MeshBasicMaterial( { color: 0x79bcff, side: THREE.DoubleSide, vertexColors: THREE.FaceColors} );
   lineMaterial = new THREE.LineBasicMaterial({color: 0xaf504c});
 
   //ORBITCONTROLS
@@ -72,14 +72,19 @@ function highlightOnMouseOver(){
 	var intersects = raycaster.intersectObjects(scene.children);
 
 	for ( var i = 0; i < intersects.length; i++ ) {
-		intersects[i].object.material.color.set(0xff0000);
+        mouseToWorld = intersects[i].point;
+		intersects[i].face.color.set(0xff0000);
 	}
 }
 
 function unhighlightObjects(){
     for(var i = 0; i < scene.children.length; i ++){
-        if(scene.children[i] instanceof THREE.Mesh)
-            scene.children[i].material.color.set(0x79bcff);
+        if(scene.children[i] instanceof THREE.Mesh){
+            for(var j = 0; j < scene.children[i].geometry.faces.length; j++){
+                scene.children[i].geometry.faces[j].color.set(0x79bcff);
+            }
+            scene.children[i].geometry.colorsNeedUpdate = true
+        }
     }
 }
 
