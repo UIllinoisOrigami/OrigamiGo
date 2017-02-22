@@ -1,7 +1,8 @@
 
 var scene, camera, renderer,
     shape, geometry, material, mesh,
-    line_geometry, line, lineMaterial, line_mesh;
+    line_geometry, line, lineMaterial, line_mesh,
+    raycaster, mouse;
 
 init();
 animate();
@@ -39,7 +40,7 @@ function init() {
   scene.add(light);
 
   //LOAD PLANE/SQUARE/LINE
-  material = new THREE.MeshBasicMaterial( { color: 0x79bcff} );
+  material = new THREE.MeshBasicMaterial( { color: 0x79bcff, side: THREE.DoubleSide} );
   lineMaterial = new THREE.LineBasicMaterial({color: 0xaf504c});
 
   //ORBITCONTROLS
@@ -52,13 +53,40 @@ function init() {
   controls.staticMoving = true;
   controls.dynamicDampingFactor = 0.6;
 
+  // RAYCASTING
+  mouse = new THREE.Vector2();
+  raycaster = new THREE.Raycaster();
+
   //EVENT LISTENERS
   window.addEventListener('keydown', onKeyDown, false);
   window.addEventListener('keyup', onKeyUp, false);
+  window.addEventListener( 'mousemove', onMouseMove, false);
+
+}
+
+function highlightOnMouseOver(){
+    // update the picking ray with the camera and mouse position
+	raycaster.setFromCamera(mouse, camera);
+
+	// calculate objects intersecting the picking ray
+	var intersects = raycaster.intersectObjects(scene.children);
+
+	for ( var i = 0; i < intersects.length; i++ ) {
+		intersects[i].object.material.color.set(0xff0000);
+	}
+}
+
+function unhighlightObjects(){
+    for(var i = 0; i < scene.children.length; i ++){
+        if(scene.children[i] instanceof THREE.Mesh)
+            scene.children[i].material.color.set(0x79bcff);
+    }
 }
 
 function animate(){
   requestAnimationFrame(animate);
+  highlightOnMouseOver();
   renderer.render(scene, camera);
+  unhighlightObjects();
   controls.update();
 }

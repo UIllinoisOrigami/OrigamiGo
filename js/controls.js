@@ -58,6 +58,16 @@ function onKeyUp(event) {
 }
 
 /**
+ *  Track mouse movement relative to viewbox
+ */
+function onMouseMove(event) {
+    // TODO: We may want to store this scaling constant, 0.8, as a global constant
+    // in case it changes in the future
+    mouse.x = ( event.clientX /(0.8 * window.innerWidth) ) * 2 - 1;
+    mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+}
+
+/**
  * Gets X1, X2, Y1, Y2 from input fields.
  * Returns Vector3 type because THREE.Line only takes Vector3.
  * @return {Vector3[]}
