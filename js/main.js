@@ -83,7 +83,7 @@ function unhighlightObjects(){
             for(var j = 0; j < scene.children[i].geometry.faces.length; j++){
                 scene.children[i].geometry.faces[j].color.set(0x79bcff);
             }
-            scene.children[i].geometry.colorsNeedUpdate = true
+            scene.children[i].geometry.colorsNeedUpdate = true;
         }
     }
 }

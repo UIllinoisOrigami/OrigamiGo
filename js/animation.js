@@ -36,7 +36,7 @@ function fold() {
     //Update ORIGAMI
     ORIGAMI.states.push(state);
     ORIGAMI.currentStateIndex += 1;
-    console.log(ORIGAMI);
+    console.log(ORIGAMI.states);
 }
 
 /**
