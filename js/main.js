@@ -73,7 +73,10 @@ function highlightOnMouseOver(){
 
 	for ( var i = 0; i < intersects.length; i++ ) {
         mouseToWorld = intersects[i].point;
-		intersects[i].face.color.set(0xff0000);
+        for(var j = 0; j < intersects[i].object.geometry.faces.length; j++){
+            intersects[i].object.geometry.faces[j].color.set(0xff0000);
+        }
+        intersects[i].object.geometry.colorsNeedUpdate = true
 	}
 }
 
